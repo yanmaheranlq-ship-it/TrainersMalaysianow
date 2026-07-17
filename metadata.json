@@ -1,0 +1,8 @@
+{
+  "name": "TrainerpreneurMalaysia",
+  "description": "Galeri bento grid responsif dan estetik untuk memaparkan portfolio trainer mengikut kategori Safety, Technical, dan Soft Skills.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

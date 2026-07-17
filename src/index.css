@@ -1,0 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+  --font-display: "Helvetica Now Display", "Helvetica", "Arial", sans-serif;
+  --font-serif: "Helvetica Now Display", "Helvetica", "Arial", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --breakpoint-xs: 475px;
+}
+
+/* Hide scrollbar globally to make the interface extremely clean and seamless */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
+/* Base custom styles to guarantee beautiful dark backgrounds */
+body {
+  background-color: #09090b;
+  color: #f4f4f5;
+  font-family: "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+}
+
+/* Explicitly target headings and display titles to use Helvetica Now Display */
+h1, h2, h3, h4, h5, h6, .font-display, [id*="logo"] {
+  font-family: "Helvetica Now Display", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+}
+
+/* Enable super-smooth momentum/kinetic scrolling on mobile touch devices */
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
+}
