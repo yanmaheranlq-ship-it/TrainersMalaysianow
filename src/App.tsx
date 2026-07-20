@@ -111,6 +111,7 @@ type RegistrationRow = {
   id: string; trainer_id: string; program_id: string; program_title: string;
   trainer_name: string; participant_name: string; participant_email: string;
   participant_phone: string | null; created_at: string; feedback_submitted: boolean;
+  status: string | null;
 };
 const mapRegistration = (r: RegistrationRow): Registration => ({
   id: r.id, trainerId: r.trainer_id, programId: r.program_id,
@@ -118,6 +119,7 @@ const mapRegistration = (r: RegistrationRow): Registration => ({
   participantName: r.participant_name, participantEmail: r.participant_email,
   participantPhone: r.participant_phone || undefined, createdAt: r.created_at,
   feedbackSubmitted: r.feedback_submitted,
+  status: (r.status as Registration['status']) || 'pending',
 });
 const registrationToRow = (r: Registration) => ({
   id: r.id, trainer_id: r.trainerId, program_id: r.programId,
@@ -159,6 +161,7 @@ export interface Registration {
   participantPhone?: string;
   createdAt: string;
   feedbackSubmitted: boolean;
+  status: 'pending' | 'approved' | 'rejected';
 }
 
 const enrichCategory = (title: string, skills: string[], originalCat: CategoryType): CategoryType => {
@@ -1095,6 +1098,12 @@ export default function App() {
         registrations={registrations}
         feedbacks={feedbacks}
         onSelectTrainer={setSelectedTrainer}
+        onApproveRegistration={async (id, status) => {
+          const { error } = await supabase.from('registrations').update({ status }).eq('id', id);
+          if (!error) {
+            setRegistrations(prev => prev.map(r => r.id === id ? { ...r, status } : r));
+          }
+        }}
       />
 
       {/* REGISTRATION MODAL OVERLAY */}

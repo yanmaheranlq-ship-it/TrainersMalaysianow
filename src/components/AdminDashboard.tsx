@@ -20,6 +20,7 @@ import {
   CheckCircle,
   AlertCircle,
   MessageSquare,
+  XCircle,
 } from 'lucide-react';
 import {
   BarChart,
@@ -46,6 +47,7 @@ interface AdminDashboardProps {
   registrations: Registration[];
   feedbacks: import('../types').FeedbackItem[];
   onSelectTrainer: (trainer: Trainer) => void;
+  onApproveRegistration: (id: string, status: 'approved' | 'rejected') => void;
 }
 
 type TabId = 'overview' | 'trainers' | 'programs' | 'registrations' | 'feedback';
@@ -118,6 +120,7 @@ export default function AdminDashboard({
   registrations,
   feedbacks,
   onSelectTrainer,
+  onApproveRegistration,
 }: AdminDashboardProps) {
   const [tab, setTab] = useState<TabId>('overview');
   const [search, setSearch] = useState('');
@@ -585,59 +588,85 @@ export default function AdminDashboard({
                   <StatCard label="Active" value={stats.activePrograms} icon={Activity} accent="#f59e0b" />
                   <StatCard label="Participants" value={stats.totalParticipants} icon={Users} accent="#ef4444" />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                  {portfolios.map((p) => (
-                    <div
-                      key={p.id}
-                      className="bg-zinc-900/70 border border-zinc-800/80 rounded-2xl overflow-hidden hover:border-red-500/30 transition-all"
-                    >
-                      <div className="relative h-28">
-                        <img
-                          src={p.image}
-                          alt={p.title}
-                          className="w-full h-full object-cover"
-                          referrerPolicy="no-referrer"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 via-zinc-900/40 to-transparent" />
-                        <span
-                          className={`absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border ${
-                            p.status === 'Selesai'
-                              ? 'bg-emerald-950/60 border-emerald-500/40 text-emerald-400'
-                              : 'bg-amber-950/60 border-amber-500/40 text-amber-400'
-                          }`}
-                        >
-                          {p.status || 'Selesai'}
-                        </span>
-                      </div>
-                      <div className="p-3.5 space-y-2">
-                        <p className="text-xs font-bold text-white leading-snug line-clamp-2">{p.title}</p>
-                        <div className="flex items-center justify-between text-[10px] text-zinc-500">
-                          <span className="truncate">{p.trainerName}</span>
-                          <span className="shrink-0 ml-2">{p.duration} • {p.level}</span>
-                        </div>
-                        <div className="flex items-center justify-between pt-2 border-t border-zinc-800/60">
-                          <span className="text-[10px] text-zinc-400 flex items-center gap-1">
-                            <Users size={10} /> {p.participantsCount} enrolled
-                          </span>
-                          <span
-                            className="px-1.5 py-0.5 rounded text-[9px] font-bold border"
-                            style={{
-                              color: CATEGORY_COLORS[p.category],
-                              borderColor: `${CATEGORY_COLORS[p.category]}40`,
-                              background: `${CATEGORY_COLORS[p.category]}15`,
-                            }}
-                          >
-                            {CATEGORY_LABELS[p.category]}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {portfolios.length === 0 && (
-                    <div className="col-span-full text-center py-12 text-zinc-500 text-xs">
-                      No programs registered yet.
-                    </div>
-                  )}
+                <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-2xl overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left min-w-[700px]">
+                      <thead className="bg-zinc-950/60 border-b border-zinc-800">
+                        <tr className="text-[10px] uppercase tracking-wider text-zinc-500 font-bold">
+                          <th className="px-4 py-3 w-[280px]">Program</th>
+                          <th className="px-4 py-3">Trainer</th>
+                          <th className="px-4 py-3">Category</th>
+                          <th className="px-4 py-3">Duration</th>
+                          <th className="px-4 py-3">Level</th>
+                          <th className="px-4 py-3">Participants</th>
+                          <th className="px-4 py-3">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {portfolios.map((p) => (
+                          <tr key={p.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2.5">
+                                <img
+                                  src={p.image}
+                                  alt={p.title}
+                                  className="w-10 h-10 rounded-lg object-cover border border-zinc-800 shrink-0"
+                                  referrerPolicy="no-referrer"
+                                />
+                                <p className="text-xs font-bold text-white leading-snug line-clamp-2">{p.title}</p>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-xs text-zinc-300">{p.trainerName}</td>
+                            <td className="px-4 py-3">
+                              <span
+                                className="px-2 py-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap"
+                                style={{
+                                  color: CATEGORY_COLORS[p.category],
+                                  borderColor: `${CATEGORY_COLORS[p.category]}40`,
+                                  background: `${CATEGORY_COLORS[p.category]}15`,
+                                }}
+                              >
+                                {CATEGORY_LABELS[p.category]}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-xs text-zinc-400 whitespace-nowrap">{p.duration}</td>
+                            <td className="px-4 py-3">
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                                p.level === 'Lanjutan'
+                                  ? 'text-red-400 border-red-500/30 bg-red-950/30'
+                                  : p.level === 'Pertengahan'
+                                  ? 'text-amber-400 border-amber-500/30 bg-amber-950/30'
+                                  : 'text-emerald-400 border-emerald-500/30 bg-emerald-950/30'
+                              }`}>
+                                {p.level}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className="text-xs text-zinc-300 font-semibold flex items-center gap-1">
+                                <Users size={10} className="text-zinc-500" /> {p.participantsCount}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                                p.status === 'Selesai'
+                                  ? 'bg-emerald-950/60 border-emerald-500/40 text-emerald-400'
+                                  : 'bg-amber-950/60 border-amber-500/40 text-amber-400'
+                              }`}>
+                                {p.status || 'Selesai'}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                        {portfolios.length === 0 && (
+                          <tr>
+                            <td colSpan={7} className="px-4 py-8 text-center text-zinc-500 text-xs">
+                              No programs registered yet.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -649,54 +678,72 @@ export default function AdminDashboard({
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-4"
               >
-                <StatCard
-                  label="Total Registrations"
-                  value={registrations.length}
-                  icon={ClipboardList}
-                  accent="#f59e0b"
-                  sub={`${feedbacks.length} feedbacks submitted`}
-                />
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <StatCard label="Total" value={registrations.length} icon={ClipboardList} accent="#f59e0b" />
+                  <StatCard label="Pending" value={registrations.filter(r => r.status === 'pending').length} icon={AlertCircle} accent="#eab308" />
+                  <StatCard label="Approved" value={registrations.filter(r => r.status === 'approved').length} icon={CheckCircle} accent="#10b981" />
+                  <StatCard label="Feedback" value={feedbacks.length} icon={MessageSquare} accent="#6366f1" />
+                </div>
                 <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-2xl overflow-hidden">
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left min-w-[640px]">
+                    <table className="w-full text-left min-w-[780px]">
                     <thead className="bg-zinc-950/60 border-b border-zinc-800">
                       <tr className="text-[10px] uppercase tracking-wider text-zinc-500 font-bold">
-                        <th className="px-4 py-3">Ref ID</th>
                         <th className="px-4 py-3">Participant</th>
-                        <th className="px-4 py-3 hidden md:table-cell">Program</th>
-                        <th className="px-4 py-3 hidden lg:table-cell">Trainer</th>
-                        <th className="px-4 py-3 hidden sm:table-cell">Date</th>
+                        <th className="px-4 py-3">Program</th>
+                        <th className="px-4 py-3">Trainer</th>
+                        <th className="px-4 py-3">Date</th>
                         <th className="px-4 py-3">Status</th>
+                        <th className="px-4 py-3">Action</th>
                       </tr>
                     </thead>
                     <tbody>
                       {registrations.map((r) => (
-                        <tr key={r.id} className="border-b border-zinc-850 hover:bg-zinc-850/40 transition-colors">
-                          <td className="px-4 py-3">
-                            <span className="text-[10px] font-mono font-bold text-red-400 bg-red-950/30 border border-red-900/30 px-1.5 py-0.5 rounded">
-                              {r.id}
-                            </span>
-                          </td>
+                        <tr key={r.id} className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
                           <td className="px-4 py-3">
                             <p className="text-xs font-bold text-white">{r.participantName}</p>
                             <p className="text-[10px] text-zinc-500">{r.participantEmail}</p>
                           </td>
-                          <td className="px-4 py-3 hidden md:table-cell text-xs text-zinc-300 max-w-[180px] truncate">
-                            {r.programTitle}
+                          <td className="px-4 py-3 text-xs text-zinc-300 max-w-[180px]">
+                            <span className="line-clamp-2">{r.programTitle}</span>
                           </td>
-                          <td className="px-4 py-3 hidden lg:table-cell text-xs text-zinc-400">{r.trainerName}</td>
-                          <td className="px-4 py-3 hidden sm:table-cell text-[10px] text-zinc-500">
+                          <td className="px-4 py-3 text-xs text-zinc-400 whitespace-nowrap">{r.trainerName}</td>
+                          <td className="px-4 py-3 text-[10px] text-zinc-500 whitespace-nowrap">
                             {new Date(r.createdAt).toLocaleDateString()}
                           </td>
                           <td className="px-4 py-3">
-                            {r.feedbackSubmitted ? (
+                            {r.status === 'approved' ? (
                               <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-400">
-                                <CheckCircle size={11} /> Reviewed
+                                <CheckCircle size={11} /> Approved
+                              </span>
+                            ) : r.status === 'rejected' ? (
+                              <span className="flex items-center gap-1 text-[10px] font-bold text-red-400">
+                                <XCircle size={11} /> Rejected
                               </span>
                             ) : (
                               <span className="flex items-center gap-1 text-[10px] font-bold text-amber-400">
                                 <AlertCircle size={11} /> Pending
                               </span>
+                            )}
+                          </td>
+                          <td className="px-4 py-3">
+                            {r.status === 'pending' ? (
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  onClick={() => onApproveRegistration(r.id, 'approved')}
+                                  className="px-2.5 py-1 text-[10px] font-bold bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors"
+                                >
+                                  Approve
+                                </button>
+                                <button
+                                  onClick={() => onApproveRegistration(r.id, 'rejected')}
+                                  className="px-2.5 py-1 text-[10px] font-bold bg-zinc-700 hover:bg-red-600 text-zinc-300 hover:text-white rounded-lg transition-colors"
+                                >
+                                  Reject
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="text-[10px] text-zinc-600">--</span>
                             )}
                           </td>
                         </tr>
