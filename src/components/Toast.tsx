@@ -127,9 +127,9 @@ function useConfirmState() {
 }
 
 const CONFIRM_VARIANT_STYLES = {
-  danger:  { icon: 'bg-red-100',    iconColor: 'text-red-600',    btn: 'bg-red-600 hover:bg-red-500 shadow-red-200' },
-  warning: { icon: 'bg-amber-100',  iconColor: 'text-amber-600',  btn: 'bg-amber-600 hover:bg-amber-500 shadow-amber-200' },
-  info:    { icon: 'bg-blue-100',   iconColor: 'text-blue-600',   btn: 'bg-blue-600 hover:bg-blue-500 shadow-blue-200' },
+  danger:  { iconBg: 'bg-red-500/10',   iconRing: 'ring-red-500/20',   iconColor: 'text-red-400',    btn: 'bg-red-600 hover:bg-red-500 active:bg-red-700', btnShadow: 'shadow-red-900/40' },
+  warning: { iconBg: 'bg-amber-500/10', iconRing: 'ring-amber-500/20', iconColor: 'text-amber-400',  btn: 'bg-amber-600 hover:bg-amber-500 active:bg-amber-700', btnShadow: 'shadow-amber-900/40' },
+  info:    { iconBg: 'bg-blue-500/10',  iconRing: 'ring-blue-500/20',  iconColor: 'text-blue-400',   btn: 'bg-blue-600 hover:bg-blue-500 active:bg-blue-700', btnShadow: 'shadow-blue-900/40' },
 };
 
 export function ConfirmDialogContainer() {
@@ -153,47 +153,44 @@ export function ConfirmDialogContainer() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
-          className="fixed inset-0 z-[300] flex items-center justify-center p-4"
-          style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}
+          transition={{ duration: 0.18 }}
+          className="fixed inset-0 z-[300] flex items-center justify-center p-6"
+          style={{ backgroundColor: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)' }}
           onClick={(e) => { if (e.target === e.currentTarget) handleResponse(false); }}
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.92, y: 12 }}
+            initial={{ opacity: 0, scale: 0.94, y: 16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.92, y: 12 }}
-            transition={{ type: 'spring', stiffness: 380, damping: 28 }}
-            className="bg-zinc-900 border border-zinc-700/60 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
+            exit={{ opacity: 0, scale: 0.94, y: 16 }}
+            transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+            className="bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl w-full max-w-[360px] overflow-hidden"
           >
-            {/* Header */}
-            <div className="flex items-start gap-3.5 p-5 pb-4">
-              <div className={`shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${styles.icon}`}>
-                <Trash2 size={18} className={styles.iconColor} />
+            {/* Body */}
+            <div className="px-6 pt-6 pb-5 text-center flex flex-col items-center gap-4">
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ring-1 ${styles.iconBg} ${styles.iconRing}`}>
+                <Trash2 size={24} className={styles.iconColor} strokeWidth={1.75} />
               </div>
-              <div className="flex-1 pt-0.5">
-                <p className="text-white font-bold text-base leading-snug">
+              <div className="space-y-1.5">
+                <p className="text-white font-bold text-[17px] leading-tight tracking-tight">
                   {state.title ?? 'Pengesahan'}
                 </p>
-                <p className="text-zinc-400 text-sm mt-1 leading-relaxed">
+                <p className="text-zinc-400 text-sm leading-relaxed">
                   {state.message}
                 </p>
               </div>
             </div>
 
-            {/* Divider */}
-            <div className="h-px bg-zinc-700/50 mx-5" />
-
             {/* Actions */}
-            <div className="flex items-center justify-end gap-2.5 p-4 pt-3.5">
+            <div className="px-6 pb-6 flex items-center gap-3">
               <button
                 onClick={() => handleResponse(false)}
-                className="px-4 py-2 rounded-lg text-sm font-semibold text-zinc-300 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-zinc-600 transition-all duration-150 cursor-pointer"
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-zinc-300 bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-750 border border-zinc-700/80 hover:border-zinc-600 transition-all duration-150 cursor-pointer"
               >
                 {state.cancelLabel ?? 'Batal'}
               </button>
               <button
                 onClick={() => handleResponse(true)}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all duration-150 cursor-pointer shadow-lg ${styles.btn}`}
+                className={`flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-150 cursor-pointer shadow-lg ${styles.btn} ${styles.btnShadow}`}
               >
                 {state.confirmLabel ?? 'Padam'}
               </button>
