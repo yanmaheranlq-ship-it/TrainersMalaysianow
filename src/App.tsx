@@ -34,12 +34,111 @@ import {
 } from 'lucide-react';
 
 import { Trainer, PortfolioItem, CategoryType, FeedbackItem } from './types';
-import { INITIAL_TRAINERS, INITIAL_PORTFOLIO, TRAINING_STATS } from './data';
+import { TRAINING_STATS } from './data';
 import TrainerBentoGrid from './components/TrainerBentoGrid';
 import TrainerDetailModal from './components/TrainerDetailModal';
 import AddTrainerModal from './components/AddTrainerModal';
 import LoginModal from './components/LoginModal';
 import TopRankingTrainers from './components/TopRankingTrainers';
+import { supabase } from './lib/supabase';
+
+// --- DB row <-> TS model mappers ---
+type TrainerRow = {
+  id: string; name: string; title: string; category: string; avatar: string | null;
+  bio: string | null; rating: number; experience: string | null;
+  certifications: string[] | null; skills: string[] | null;
+  email: string | null; phone: string | null; password: string | null;
+  featured: boolean; projects_count: number; socials: any;
+  academic_qualification: string[] | null; professional_qualification: string[] | null;
+  previous_companies: string[] | null; training_topics: string[] | null;
+  created_at: string;
+};
+const mapTrainer = (r: TrainerRow): Trainer => ({
+  id: r.id, name: r.name, title: r.title, category: r.category as CategoryType,
+  avatar: r.avatar || '', bio: r.bio || '', rating: Number(r.rating) || 0,
+  experience: r.experience || '', certifications: r.certifications || [],
+  skills: r.skills || [], email: r.email || '', phone: r.phone || '',
+  password: r.password || undefined, featured: r.featured,
+  projectsCount: r.projects_count || 0, socials: r.socials || undefined,
+  academicQualification: r.academic_qualification || undefined,
+  professionalQualification: r.professional_qualification || undefined,
+  previousCompanies: r.previous_companies || undefined,
+  trainingTopics: r.training_topics || undefined,
+});
+const trainerToRow = (t: Trainer) => ({
+  id: t.id, name: t.name, title: t.title, category: t.category,
+  avatar: t.avatar, bio: t.bio, rating: t.rating, experience: t.experience,
+  certifications: t.certifications, skills: t.skills,
+  email: t.email, phone: t.phone, password: t.password || null,
+  featured: t.featured, projects_count: t.projectsCount,
+  socials: t.socials || null,
+  academic_qualification: t.academicQualification || null,
+  professional_qualification: t.professionalQualification || null,
+  previous_companies: t.previousCompanies || null,
+  training_topics: t.trainingTopics || null,
+});
+
+type PortfolioRow = {
+  id: string; trainer_id: string; trainer_name: string; trainer_avatar: string | null;
+  title: string; category: string; description: string | null; image: string | null;
+  duration: string | null; level: string; outcomes: string[] | null;
+  participants_count: number; status: string; created_at: string;
+};
+const mapPortfolio = (r: PortfolioRow): PortfolioItem => ({
+  id: r.id, trainerId: r.trainer_id, trainerName: r.trainer_name,
+  trainerAvatar: r.trainer_avatar || '', title: r.title, category: r.category as CategoryType,
+  description: r.description || '', image: r.image || '', duration: r.duration || '',
+  level: r.level as PortfolioItem['level'], outcomes: r.outcomes || [],
+  participantsCount: r.participants_count || 0, status: (r.status as PortfolioItem['status']) || 'Selesai',
+});
+const portfolioToRow = (p: PortfolioItem) => ({
+  id: p.id, trainer_id: p.trainerId, trainer_name: p.trainerName,
+  trainer_avatar: p.trainerAvatar, title: p.title, category: p.category,
+  description: p.description, image: p.image, duration: p.duration,
+  level: p.level, outcomes: p.outcomes, participants_count: p.participantsCount,
+  status: p.status || 'Selesai',
+});
+
+type RegistrationRow = {
+  id: string; trainer_id: string; program_id: string; program_title: string;
+  trainer_name: string; participant_name: string; participant_email: string;
+  participant_phone: string | null; created_at: string; feedback_submitted: boolean;
+};
+const mapRegistration = (r: RegistrationRow): Registration => ({
+  id: r.id, trainerId: r.trainer_id, programId: r.program_id,
+  programTitle: r.program_title, trainerName: r.trainer_name,
+  participantName: r.participant_name, participantEmail: r.participant_email,
+  participantPhone: r.participant_phone || undefined, createdAt: r.created_at,
+  feedbackSubmitted: r.feedback_submitted,
+});
+const registrationToRow = (r: Registration) => ({
+  id: r.id, trainer_id: r.trainerId, program_id: r.programId,
+  program_title: r.programTitle, trainer_name: r.trainerName,
+  participant_name: r.participantName, participant_email: r.participantEmail,
+  participant_phone: r.participant_phone || null, feedback_submitted: r.feedbackSubmitted,
+});
+
+type FeedbackRow = {
+  id: string; registration_id: string; program_id: string; program_title: string;
+  trainer_id: string; participant_name: string; rating_overall: number;
+  rating_materials: number; rating_trainer: number; expectation_met: string;
+  comment: string | null; created_at: string;
+};
+const mapFeedback = (r: FeedbackRow): FeedbackItem => ({
+  id: r.id, registrationId: r.registration_id, programId: r.program_id,
+  programTitle: r.program_title, trainerId: r.trainer_id,
+  participantName: r.participant_name, ratingOverall: r.rating_overall,
+  ratingMaterials: r.rating_materials, ratingTrainer: r.rating_trainer,
+  expectationMet: r.expectation_met as FeedbackItem['expectationMet'],
+  comment: r.comment || '', createdAt: r.created_at,
+});
+const feedbackToRow = (f: FeedbackItem) => ({
+  id: f.id, registration_id: f.registrationId, program_id: f.programId,
+  program_title: f.programTitle, trainer_id: f.trainerId,
+  participant_name: f.participantName, rating_overall: f.ratingOverall,
+  rating_materials: f.ratingMaterials, rating_trainer: f.ratingTrainer,
+  expectation_met: f.expectationMet, comment: f.comment,
+});
 
 export interface Registration {
   id: string;
@@ -98,87 +197,52 @@ const safeLocalStorage = {
 };
 
 export default function App() {
-  // 1. Core State with LocalStorage Persistence
-  const [trainers, setTrainers] = useState<Trainer[]>(() => {
-    const local = safeLocalStorage.getItem('trainer_gallery_trainers');
-    let base: Trainer[] = INITIAL_TRAINERS;
-    if (local) {
-      try {
-        const parsed = JSON.parse(local);
-        if (parsed.length >= INITIAL_TRAINERS.length) {
-          base = parsed;
-        }
-      } catch (e) {
-        // ignore
-      }
-    }
-    // Deduplicate base by ID to guarantee unique React keys
-    const seenIds = new Set<string>();
-    const uniqueBase = base.filter(t => {
-      if (!t.id || seenIds.has(t.id)) {
-        return false;
-      }
-      seenIds.add(t.id);
-      return true;
-    });
-
-    return uniqueBase.map(t => ({
-      ...t,
-      category: enrichCategory(t.title, t.skills, t.category)
-    }));
-  });
-
-  const [portfolios, setPortfolios] = useState<PortfolioItem[]>(() => {
-    const local = safeLocalStorage.getItem('trainer_gallery_portfolios');
-    let base: PortfolioItem[] = INITIAL_PORTFOLIO;
-    if (local) {
-      try {
-        const parsed = JSON.parse(local);
-        if (parsed.length > 6) {
-          base = parsed;
-        }
-      } catch (e) {
-        // ignore
-      }
-    }
-    // Deduplicate base by ID to guarantee unique React keys
-    const seenIds = new Set<string>();
-    const uniqueBase = base.filter(p => {
-      if (!p.id || seenIds.has(p.id)) {
-        return false;
-      }
-      seenIds.add(p.id);
-      return true;
-    });
-
-    return uniqueBase.map(p => {
-      const text = (p.title + ' ' + p.description).toLowerCase();
-      let cat = p.category;
-      if (text.includes('pemasaran') || text.includes('marketing') || text.includes('jualan') || text.includes('sales') || text.includes('branding') || text.includes('copywriting') || text.includes('media sosial') || text.includes('sosial media')) {
-        cat = 'marketing';
-      } else if (text.includes('kewangan') || text.includes('finance') || text.includes('akaun') || text.includes('accounting') || text.includes('cukai') || text.includes('tax') || text.includes('pelaburan') || text.includes('investment') || text.includes('audit')) {
-        cat = 'finance';
-      } else if (text.includes('kepimpinan') || text.includes('leadership') || text.includes('pengurusan') || text.includes('management') || text.includes('executive') || text.includes('project manager') || text.includes('urus')) {
-        cat = 'management';
-      } else if (text.includes('perniagaan') || text.includes('business') || text.includes('usahawan') || text.includes('entrepreneur') || text.includes('startup') || text.includes('pks') || text.includes('strategi perniagaan')) {
-        cat = 'business';
-      }
-      return {
-        ...p,
-        category: cat,
-        status: p.status || 'Selesai'
-      };
-    });
-  });
-
-  // Save to LocalStorage
-  useEffect(() => {
-    safeLocalStorage.setItem('trainer_gallery_trainers', JSON.stringify(trainers));
-  }, [trainers]);
+  // 1. Core State — loaded from Supabase on mount
+  const [trainers, setTrainers] = useState<Trainer[]>([]);
+  const [portfolios, setPortfolios] = useState<PortfolioItem[]>([]);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
   useEffect(() => {
-    safeLocalStorage.setItem('trainer_gallery_portfolios', JSON.stringify(portfolios));
-  }, [portfolios]);
+    let cancelled = false;
+    (async () => {
+      try {
+        const [tRes, pRes, rRes, fRes] = await Promise.all([
+          supabase.from('trainers').select('*'),
+          supabase.from('portfolios').select('*'),
+          supabase.from('registrations').select('*'),
+          supabase.from('feedbacks').select('*'),
+        ]);
+        if (cancelled) return;
+        if (tRes.error) console.error('trainers load error:', tRes.error.message);
+        if (pRes.error) console.error('portfolios load error:', pRes.error.message);
+        if (rRes.error) console.error('registrations load error:', rRes.error.message);
+        if (fRes.error) console.error('feedbacks load error:', fRes.error.message);
+
+        const loadedTrainers = (tRes.data || []).map(mapTrainer).map(t => ({
+          ...t,
+          category: enrichCategory(t.title, t.skills, t.category),
+        }));
+        setTrainers(loadedTrainers);
+
+        const loadedPortfolios = (pRes.data || []).map(mapPortfolio).map(p => ({
+          ...p,
+          status: p.status || 'Selesai',
+        }));
+        setPortfolios(loadedPortfolios);
+
+        const loadedRegs = (rRes.data || []).map(mapRegistration);
+        setRegistrations(loadedRegs);
+
+        const loadedFeeds = (fRes.data || []).map(mapFeedback);
+        setFeedbacks(loadedFeeds);
+      } catch (e) {
+        console.error('Failed to load data from Supabase:', e);
+      } finally {
+        if (!cancelled) setDataLoaded(true);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   // 2. Interactive States
   const [selectedCategory, setSelectedCategory] = useState<CategoryType | 'all'>('all');
@@ -294,10 +358,19 @@ export default function App() {
     if (selectedTrainer && selectedTrainer.id === updatedTrainer.id) {
       setSelectedTrainer(updatedTrainer);
     }
+    supabase.from('trainers').upsert(trainerToRow(updatedTrainer))
+      .then(({ error }) => { if (error) console.error('trainer upsert failed:', error.message); });
   };
 
   const handleUpdatePortfolios = (updatedPortfolios: PortfolioItem[]) => {
     setPortfolios(updatedPortfolios);
+    Promise.all(updatedPortfolios.map(p =>
+      supabase.from('portfolios').upsert(portfolioToRow(p))
+    )).then(results => {
+      results.forEach(({ error }, i) => {
+        if (error) console.error('portfolio upsert failed:', updatedPortfolios[i].id, error.message);
+      });
+    });
   };
 
   // Registration Alert State
@@ -308,64 +381,14 @@ export default function App() {
   } | null>(null);
 
   // New Booking & Feedback states
-  const [registrations, setRegistrations] = useState<Registration[]>(() => {
-    const local = safeLocalStorage.getItem('trainer_gallery_registrations');
-    let base: Registration[] = [
-      {
-        id: 'REG-882001',
-        trainerId: 't1',
-        programId: 'p1',
-        programTitle: 'Kursus Persediaan Keselamatan & Kesihatan Pekerjaan DOSH/OSHA',
-        trainerName: 'Ahmad Fadhil Bin Razak',
-        participantName: 'Mazian Musa',
-        participantEmail: 'mazianmusa9494@gmail.com',
-        participantPhone: '+60 12-345 6789',
-        createdAt: new Date().toISOString(),
-        feedbackSubmitted: false
-      },
-      {
-        id: 'REG-882002',
-        trainerId: 't4',
-        programId: 'p2',
-        programTitle: 'Latihan Amali CPR, Penggunaan AED & Pertolongan Cemas Industri',
-        trainerName: 'Kamarul Ariffin Bin Yusof',
-        participantName: 'Faizal Rahim',
-        participantEmail: 'faizal@example.com',
-        participantPhone: '+60 11-234 5678',
-        createdAt: new Date().toISOString(),
-        feedbackSubmitted: false
-      }
-    ];
-    if (local) {
-      try {
-        const parsed = JSON.parse(local);
-        if (Array.isArray(parsed)) {
-          base = parsed;
-        }
-      } catch (e) {
-        // ignore
-      }
-    }
-    // Deduplicate registrations by ID to guarantee unique React keys
-    const seenIds = new Set<string>();
-    return base.filter(r => {
-      if (!r.id || seenIds.has(r.id)) {
-        return false;
-      }
-      seenIds.add(r.id);
-      return true;
-    });
-  });
+  const [registrations, setRegistrations] = useState<Registration[]>([]);
 
   const [bookingProgram, setBookingProgram] = useState<{
     programId: string;
     trainerId: string;
   } | null>(null);
 
-  // Synchronize registrations to LocalStorage
-  useEffect(() => {
-    safeLocalStorage.setItem('trainer_gallery_registrations', JSON.stringify(registrations));
-  }, [registrations]);
+
 
   // Inject a dynamic registration ID if a user deep-links to feedback for a program without registrations
   useEffect(() => {
@@ -388,6 +411,8 @@ export default function App() {
             createdAt: new Date().toISOString(),
             feedbackSubmitted: false
           };
+          supabase.from('registrations').insert(registrationToRow(newReg))
+            .then(({ error }) => { if (error) console.error('deep-link reg insert failed:', error.message); });
           return [newReg, ...prev];
         }
         return prev;
@@ -395,63 +420,9 @@ export default function App() {
     }
   }, [urlAction, portfolios, trainers]);
 
-  const [feedbacks, setFeedbacks] = useState<FeedbackItem[]>(() => {
-    const local = safeLocalStorage.getItem('trainer_gallery_feedbacks');
-    let base: FeedbackItem[] = [
-      {
-        id: 'FEED-1001',
-        registrationId: 'REG-881000',
-        programId: 'p1',
-        programTitle: 'Kursus Persediaan Keselamatan & Kesihatan Pekerjaan DOSH/OSHA',
-        trainerId: 't1',
-        participantName: 'Farhan Hakimi',
-        ratingOverall: 5,
-        ratingMaterials: 5,
-        ratingTrainer: 5,
-        expectationMet: 'Sangat Setuju',
-        comment: 'Sangat mantap! Penjelasan yang diberikan oleh Tuan Ahmad Fadhil amat jelas dan mudah difahami. Slaid kursus yang sangat informatif dan sesi praktikal HIRARC yang sungguh berkesan.',
-        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
-      },
-      {
-        id: 'FEED-1002',
-        registrationId: 'REG-881001',
-        programId: 'p2',
-        programTitle: 'Latihan Amali CPR, Penggunaan AED & Pertolongan Cemas Industri',
-        trainerId: 't4',
-        participantName: 'Siti Nurhaliza',
-        ratingOverall: 5,
-        ratingMaterials: 4,
-        ratingTrainer: 5,
-        expectationMet: 'Sangat Setuju',
-        comment: 'Latihan CPR secara hands-on sangat membantu meningkatkan keyakinan saya untuk bertindak sekiranya berlaku kecemasan di pejabat. Trainer Kamarul sangat berpengalaman dan kelakar!',
-        createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString()
-      }
-    ];
-    if (local) {
-      try {
-        const parsed = JSON.parse(local);
-        if (Array.isArray(parsed)) {
-          base = parsed;
-        }
-      } catch (e) {
-        // ignore
-      }
-    }
-    // Deduplicate feedbacks by ID to guarantee unique React keys
-    const seenIds = new Set<string>();
-    return base.filter(f => {
-      if (!f.id || seenIds.has(f.id)) {
-        return false;
-      }
-      seenIds.add(f.id);
-      return true;
-    });
-  });
+  const [feedbacks, setFeedbacks] = useState<FeedbackItem[]>([]);
 
-  // Synchronize feedbacks to LocalStorage
-  useEffect(() => {
-    safeLocalStorage.setItem('trainer_gallery_feedbacks', JSON.stringify(feedbacks));
-  }, [feedbacks]);
+
 
   // Form states for Registration & Feedback
   const [regName, setRegName] = useState('');
@@ -501,15 +472,23 @@ export default function App() {
   const handleResetData = () => {
     let confirmReset = true;
     try {
-      confirmReset = window.confirm('Are you sure you want to reset the gallery to default data? All newly added data will be deleted.');
+      confirmReset = window.confirm('Are you sure you want to reload the gallery from the database? Local filters will be reset.');
     } catch (e) {
       console.warn("window.confirm is blocked in this environment.", e);
     }
     if (confirmReset) {
-      setTrainers(INITIAL_TRAINERS);
-      setPortfolios(INITIAL_PORTFOLIO);
       setSelectedCategory('all');
       setSearchQuery('');
+      (async () => {
+        const [tRes, pRes] = await Promise.all([
+          supabase.from('trainers').select('*'),
+          supabase.from('portfolios').select('*'),
+        ]);
+        if (tRes.error) console.error('reset trainers error:', tRes.error.message);
+        if (pRes.error) console.error('reset portfolios error:', pRes.error.message);
+        setTrainers((tRes.data || []).map(mapTrainer).map(t => ({ ...t, category: enrichCategory(t.title, t.skills, t.category) })));
+        setPortfolios((pRes.data || []).map(mapPortfolio).map(p => ({ ...p, status: p.status || 'Selesai' })));
+      })();
     }
   };
 
@@ -517,6 +496,10 @@ export default function App() {
   const handleAddTrainer = (newTrainer: Trainer, newPortfolio: PortfolioItem) => {
     setTrainers((prev) => [newTrainer, ...prev]);
     setPortfolios((prev) => [newPortfolio, ...prev]);
+    supabase.from('trainers').upsert(trainerToRow(newTrainer))
+      .then(({ error }) => { if (error) console.error('add trainer upsert failed:', error.message); });
+    supabase.from('portfolios').upsert(portfolioToRow(newPortfolio))
+      .then(({ error }) => { if (error) console.error('add portfolio upsert failed:', error.message); });
   };
 
   // 5. Booking Handler
@@ -587,14 +570,16 @@ export default function App() {
 
     // Update registrations
     setRegistrations(prev => [newReg, ...prev]);
+    supabase.from('registrations').insert(registrationToRow(newReg))
+      .then(({ error }) => { if (error) console.error('registration insert failed:', error.message); });
 
     // Increment participantsCount in portfolios for this program
     setPortfolios(prev => prev.map(p => {
       if (p.id === activeRegProgram.id) {
-        return {
-          ...p,
-          participantsCount: (p.participantsCount || 0) + 1
-        };
+        const updated = { ...p, participantsCount: (p.participantsCount || 0) + 1 };
+        supabase.from('portfolios').update({ participants_count: updated.participantsCount }).eq('id', updated.id)
+          .then(({ error }) => { if (error) console.error('portfolio count update failed:', error.message); });
+        return updated;
       }
       return p;
     }));
@@ -657,10 +642,10 @@ export default function App() {
     // Update trainer
     setTrainers(prev => prev.map(t => {
       if (t.id === activeFeedTrainer.id) {
-        return {
-          ...t,
-          rating: updatedRating
-        };
+        const updated = { ...t, rating: updatedRating };
+        supabase.from('trainers').update({ rating: updatedRating }).eq('id', updated.id)
+          .then(({ error }) => { if (error) console.error('trainer rating update failed:', error.message); });
+        return updated;
       }
       return t;
     }));
@@ -668,10 +653,10 @@ export default function App() {
     // Update matching registration as feedback submitted
     setRegistrations(prev => prev.map(r => {
       if (r.id.toUpperCase() === trimmedId) {
-        return {
-          ...r,
-          feedbackSubmitted: true
-        };
+        const updated = { ...r, feedbackSubmitted: true };
+        supabase.from('registrations').update({ feedback_submitted: true }).eq('id', updated.id)
+          .then(({ error }) => { if (error) console.error('registration feedback flag update failed:', error.message); });
+        return updated;
       }
       return r;
     }));
@@ -694,6 +679,8 @@ export default function App() {
     };
 
     setFeedbacks(prev => [newFeedback, ...prev]);
+    supabase.from('feedbacks').insert(feedbackToRow(newFeedback))
+      .then(({ error }) => { if (error) console.error('feedback insert failed:', error.message); });
 
     setFeedSuccessMsg(`Terima kasih! Maklum balas anda telah berjaya disimpan secara langsung. Rating ${activeFeedTrainer.name} kini dikemas kini ke ${updatedRating}!`);
     
