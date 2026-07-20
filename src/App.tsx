@@ -1018,9 +1018,6 @@ export default function App() {
         trainers={trainers}
       />
 
-      <ToastContainer />
-      <ConfirmDialogContainer />
-
       {/* REGISTRATION MODAL OVERLAY */}
       <AnimatePresence>
         {(bookingProgram || (urlAction?.type === 'register' && regProgram && regTrainer)) && regProgram && regTrainer && (
@@ -1733,6 +1730,8 @@ export default function App() {
         )}
       </AnimatePresence>
 
+      <ToastContainer />
+      <ConfirmDialogContainer />
     </div>
   );
 }
