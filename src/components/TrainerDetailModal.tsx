@@ -4,6 +4,7 @@ import { X, Award, Mail, Phone, Star, Briefcase, CheckCircle2, Clock, BookOpen, 
 import { Trainer, PortfolioItem, FeedbackItem } from '../types';
 import TrainerSalesAnalytics from './TrainerSalesAnalytics';
 import { HRDCorpBadges } from './HRDCorpBadges';
+import { showToast } from './Toast';
 
 export function parseQualification(text: string) {
   // Match things like ' — 2020', ' - 2020', ' (2020)', ' 2020' at the end of string
@@ -305,11 +306,11 @@ export default function TrainerDetailModal({
 
   const processFile = (file: File) => {
     if (!file.type.startsWith('image/')) {
-      alert('Sila pilih fail imej sahaja.');
+      showToast('Sila pilih fail imej sahaja.', 'error');
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      alert('Sila pilih imej yang bersaiz kurang daripada 5MB.');
+      showToast('Sila pilih imej yang bersaiz kurang daripada 5MB.', 'error');
       return;
     }
 
@@ -349,7 +350,7 @@ export default function TrainerDetailModal({
 
   const handleSave = () => {
     if (!editName.trim() || !editTitle.trim() || !editBio.trim() || !editEmail.trim()) {
-      alert('Sila isi maklumat mandatori.');
+      showToast('Sila isi maklumat mandatori.', 'error');
       return;
     }
 
@@ -429,11 +430,11 @@ export default function TrainerDetailModal({
 
   const processPortfolioImageFile = (file: File) => {
     if (!file.type.startsWith('image/')) {
-      alert('Sila pilih fail imej sahaja.');
+      showToast('Sila pilih fail imej sahaja.', 'error');
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      alert('Sila pilih imej yang bersaiz kurang daripada 5MB.');
+      showToast('Sila pilih imej yang bersaiz kurang daripada 5MB.', 'error');
       return;
     }
     const reader = new FileReader();
@@ -473,7 +474,7 @@ export default function TrainerDetailModal({
   const handleSavePortfolio = (e: React.FormEvent) => {
     e.preventDefault();
     if (!portfolioTitle.trim() || !portfolioDescription.trim()) {
-      alert('Sila isi tajuk dan penerangan portfolio.');
+      showToast('Sila isi tajuk dan penerangan portfolio.', 'error');
       return;
     }
 

@@ -40,6 +40,7 @@ import TrainerDetailModal from './components/TrainerDetailModal';
 import AddTrainerModal from './components/AddTrainerModal';
 import LoginModal from './components/LoginModal';
 import TopRankingTrainers from './components/TopRankingTrainers';
+import { ToastContainer, showToast } from './components/Toast';
 import { supabase } from './lib/supabase';
 
 // --- DB row <-> TS model mappers ---
@@ -770,7 +771,7 @@ export default function App() {
                       if (loggedTrainer) {
                         setSelectedTrainer(loggedTrainer);
                       } else {
-                        alert('Trainer profile not found.');
+                        showToast('Profil trainer tidak dijumpai.', 'error');
                       }
                     }}
                     className="px-2.5 xs:px-3.5 py-1.5 rounded-full bg-red-600 hover:bg-red-500 text-white font-black text-[11px] uppercase tracking-wider flex items-center gap-1.5 transition-all duration-300 hover:scale-102 shadow-[0_2px_8px_rgba(239,68,68,0.25)] hover:shadow-[0_4px_12px_rgba(239,68,68,0.4)] cursor-pointer shrink-0"
@@ -994,9 +995,9 @@ export default function App() {
           setIsAddModalOpen(false);
           // Toast or notice trigger
           try {
-            alert(`Success! Trainer ${newTrainer.name} and their first course "${newPortfolio.title}" have been registered.`);
+            showToast(`Trainer ${newTrainer.name} dan kursus "${newPortfolio.title}" berjaya didaftarkan.`, 'success');
           } catch (e) {
-            console.warn("alert is blocked in this environment.", e);
+            console.warn("toast is blocked in this environment.", e);
           }
         }}
       />
@@ -1016,6 +1017,8 @@ export default function App() {
         }}
         trainers={trainers}
       />
+
+      <ToastContainer />
 
       {/* REGISTRATION MODAL OVERLAY */}
       <AnimatePresence>
@@ -1115,7 +1118,7 @@ export default function App() {
                       const url = `${window.location.origin}${window.location.pathname}?action=register&trainerId=${regTrainer.id}&programId=${regProgram.id}`;
                       try {
                         navigator.clipboard.writeText(url);
-                        alert('Program registration link copied successfully!');
+                        showToast('Pautan pendaftaran program berjaya disalin!', 'success');
                       } catch (err) {
                         console.error('Failed to copy', err);
                       }
