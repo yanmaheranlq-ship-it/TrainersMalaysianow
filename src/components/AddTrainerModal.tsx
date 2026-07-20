@@ -1,8 +1,72 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, UserPlus, Info, BookOpen, User, Briefcase, Mail, Phone, Award, ShieldAlert, BadgePlus, Eye, EyeOff, Upload, Image as ImageIcon, Trash2, IdCard, FileCheck } from 'lucide-react';
+import { X, UserPlus, Info, BookOpen, User, Briefcase, Mail, Phone, Award, ShieldAlert, BadgePlus, Eye, EyeOff, Upload, Image as ImageIcon, Trash2, IdCard, FileCheck, Plus, GripVertical } from 'lucide-react';
 import { Trainer, PortfolioItem, CategoryType } from '../types';
 import { supabase } from '../lib/supabase';
+
+function ListField({
+  label,
+  placeholder,
+  values,
+  onChange,
+  hint,
+}: {
+  label: string;
+  placeholder: string;
+  values: string[];
+  onChange: (vals: string[]) => void;
+  hint?: string;
+}) {
+  const update = (idx: number, val: string) => {
+    const next = [...values];
+    next[idx] = val;
+    onChange(next);
+  };
+  const add = () => onChange([...values, '']);
+  const remove = (idx: number) => {
+    if (values.length === 1) {
+      onChange(['']);
+      return;
+    }
+    onChange(values.filter((_, i) => i !== idx));
+  };
+
+  return (
+    <div className="space-y-1.5">
+      <label className="text-xs font-semibold text-zinc-700">{label}</label>
+      <div className="space-y-1.5">
+        {values.map((val, idx) => (
+          <div key={idx} className="flex items-center gap-1.5">
+            <input
+              type="text"
+              placeholder={placeholder}
+              value={val}
+              onChange={(e) => update(idx, e.target.value)}
+              className="flex-1 px-3.5 py-2 bg-zinc-50 text-zinc-900 rounded-lg border border-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-500 focus:bg-white transition-all duration-300 placeholder-zinc-400"
+            />
+            <button
+              type="button"
+              onClick={() => remove(idx)}
+              className="p-2 rounded-lg bg-zinc-100 hover:bg-red-50 text-zinc-500 hover:text-red-500 border border-zinc-200 transition-colors cursor-pointer shrink-0"
+              aria-label="Buang item"
+            >
+              <Trash2 size={14} />
+            </button>
+          </div>
+        ))}
+      </div>
+      <button
+        type="button"
+        onClick={add}
+        className="text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1 cursor-pointer transition-colors"
+      >
+        <Plus size={13} /> Tambah {label.toLowerCase()}
+      </button>
+      {hint && <span className="text-[10px] text-zinc-500 leading-tight block">{hint}</span>}
+    </div>
+  );
+}
+
 
 interface AddTrainerModalProps {
   isOpen: boolean;
@@ -53,12 +117,12 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd }: AddTrainerMo
   const [showPassword, setShowPassword] = useState(false);
   const [icNumber, setIcNumber] = useState('');
   const [tttCertNo, setTttCertNo] = useState('');
-  const [certificationsRaw, setCertificationsRaw] = useState('');
-  const [skillsRaw, setSkillsRaw] = useState('');
-  const [academicRaw, setAcademicRaw] = useState('');
-  const [professionalRaw, setProfessionalRaw] = useState('');
-  const [companiesRaw, setCompaniesRaw] = useState('');
-  const [trainingTopicsRaw, setTrainingTopicsRaw] = useState('');
+  const [certifications, setCertifications] = useState<string[]>(['']);
+  const [skills, setSkills] = useState<string[]>(['']);
+  const [academicQualification, setAcademicQualification] = useState<string[]>(['']);
+  const [professionalQualification, setProfessionalQualification] = useState<string[]>(['']);
+  const [previousCompanies, setPreviousCompanies] = useState<string[]>(['']);
+  const [trainingTopics, setTrainingTopics] = useState<string[]>(['']);
 
   // Photo upload state
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -72,7 +136,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd }: AddTrainerMo
   const [courseLevel, setCourseLevel] = useState<'Asas' | 'Pertengahan' | 'Lanjutan'>('Asas');
   const [courseDescription, setCourseDescription] = useState('');
   const [courseDuration, setCourseDuration] = useState('2 Hari (16 Jam)');
-  const [courseOutcomesRaw, setCourseOutcomesRaw] = useState('');
+  const [courseOutcomes, setCourseOutcomes] = useState<string[]>(['']);
 
   // Tab state
   const [activeTab, setActiveTab] = useState<1 | 2>(1);
@@ -158,33 +222,14 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd }: AddTrainerMo
     e.preventDefault();
     if (!validate()) return;
 
-    const certifications = certificationsRaw
-      ? certificationsRaw.split(',').map((c) => c.trim()).filter(Boolean)
-      : ['HRD Corp Certified Specialist'];
-
-    const skills = skillsRaw
-      ? skillsRaw.split(',').map((s) => s.trim()).filter(Boolean)
-      : ['Communication', 'Problem Solving'];
-
-    const academicQualification = academicRaw
-      ? academicRaw.split(',').map((a) => a.trim()).filter(Boolean)
-      : [];
-
-    const professionalQualification = professionalRaw
-      ? professionalRaw.split(',').map((p) => p.trim()).filter(Boolean)
-      : [];
-
-    const previousCompanies = companiesRaw
-      ? companiesRaw.split(',').map((c) => c.trim()).filter(Boolean)
-      : [];
-
-    const trainingTopics = trainingTopicsRaw
-      ? trainingTopicsRaw.split(',').map((t) => t.trim()).filter(Boolean)
-      : [];
-
-    const outcomes = courseOutcomesRaw
-      ? courseOutcomesRaw.split(',').map((o) => o.trim()).filter(Boolean)
-      : ['Acquire core industry understanding', 'Improve daily work efficiency'];
+    const cleanArr = (arr: string[]) => arr.map((s) => s.trim()).filter(Boolean);
+    const finalCertifications = cleanArr(certifications).length ? cleanArr(certifications) : ['HRD Corp Certified Specialist'];
+    const finalSkills = cleanArr(skills).length ? cleanArr(skills) : ['Communication', 'Problem Solving'];
+    const finalAcademic = cleanArr(academicQualification);
+    const finalProfessional = cleanArr(professionalQualification);
+    const finalCompanies = cleanArr(previousCompanies);
+    const finalTrainingTopics = cleanArr(trainingTopics);
+    const finalOutcomes = cleanArr(courseOutcomes).length ? cleanArr(courseOutcomes) : ['Acquire core industry understanding', 'Improve daily work efficiency'];
 
     const trainerId = 't_' + Date.now();
     const portfolioId = 'p_' + Date.now();
@@ -200,8 +245,8 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd }: AddTrainerMo
       bio: bio.trim(),
       rating: 4.8,
       experience,
-      certifications,
-      skills,
+      certifications: finalCertifications,
+      skills: finalSkills,
       email: email.trim(),
       phone: phone.trim() || '+60 12-345 6789',
       password: password.trim(),
@@ -209,10 +254,10 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd }: AddTrainerMo
       tttCertNo: tttCertNo.trim(),
       featured: false,
       projectsCount: 1,
-      academicQualification,
-      professionalQualification,
-      previousCompanies,
-      trainingTopics
+      academicQualification: finalAcademic,
+      professionalQualification: finalProfessional,
+      previousCompanies: finalCompanies,
+      trainingTopics: finalTrainingTopics
     };
 
     const newPortfolio: PortfolioItem = {
@@ -226,7 +271,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd }: AddTrainerMo
       image: COURSE_IMAGE_PRESETS[category],
       duration: courseDuration,
       level: courseLevel,
-      outcomes,
+      outcomes: finalOutcomes,
       participantsCount: 12
     };
 
@@ -236,10 +281,10 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd }: AddTrainerMo
     setName(''); setTitle(''); setCategory('safety'); setBio('');
     setExperience('5 Years'); setEmail(''); setPhone(''); setPassword('');
     setIcNumber(''); setTttCertNo('');
-    setCertificationsRaw(''); setSkillsRaw(''); setAcademicRaw('');
-    setProfessionalRaw(''); setCompaniesRaw(''); setTrainingTopicsRaw('');
+    setCertifications(['']); setSkills(['']); setAcademicQualification(['']);
+    setProfessionalQualification(['']); setPreviousCompanies(['']); setTrainingTopics(['']);
     setCourseTitle(''); setCourseLevel('Asas'); setCourseDescription('');
-    setCourseDuration('2 Hari (16 Jam)'); setCourseOutcomesRaw('');
+    setCourseDuration('2 Hari (16 Jam)'); setCourseOutcomes(['']);
     setAvatarFile(null); setAvatarPreview(''); setUploadError('');
     setActiveTab(1); setErrors([]);
     onClose();
@@ -485,44 +530,50 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd }: AddTrainerMo
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-zinc-700">Sijilan & Akreditasi (Pisahkan dengan koma)</label>
-                    <input type="text" placeholder="OSHA Certificate, HRD Corp Certified, First Aid Trainer" value={certificationsRaw} onChange={(e) => setCertificationsRaw(e.target.value)}
-                      className="w-full px-3.5 py-2 bg-zinc-50 text-zinc-900 rounded-lg border border-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-500 focus:bg-white transition-all duration-300 placeholder-zinc-400" />
-                    <span className="text-[10px] text-zinc-500 leading-tight block">Kelayakan profesional diiktiraf oleh kementerian atau agensi.</span>
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-zinc-700">Senarai Kemahiran (Pisahkan dengan koma)</label>
-                    <input type="text" placeholder="HIRARC Risk Assessment, CPR, Corporate Strategy" value={skillsRaw} onChange={(e) => setSkillsRaw(e.target.value)}
-                      className="w-full px-3.5 py-2 bg-zinc-50 text-zinc-900 rounded-lg border border-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-500 focus:bg-white transition-all duration-300 placeholder-zinc-400" />
-                    <span className="text-[10px] text-zinc-500 leading-tight block">Tag sub-pengkhususan dipaparkan dalam modul resume.</span>
-                  </div>
+                  <ListField
+                    label="Sijilan & Akreditasi"
+                    placeholder="OSHA Certificate, HRD Corp Certified..."
+                    values={certifications}
+                    onChange={setCertifications}
+                    hint="Kelayakan profesional diiktiraf oleh kementerian atau agensi."
+                  />
+                  <ListField
+                    label="Senarai Kemahiran"
+                    placeholder="HIRARC Risk Assessment, CPR, Corporate Strategy..."
+                    values={skills}
+                    onChange={setSkills}
+                    hint="Tag sub-pengkhususan dipaparkan dalam modul resume."
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-zinc-700">Kelayakan Akademik (Pisahkan dengan koma)</label>
-                    <input type="text" placeholder="Sarjana Muda Sains Komputer (UM), Diploma Rangkaian (UiTM)" value={academicRaw} onChange={(e) => setAcademicRaw(e.target.value)}
-                      className="w-full px-3.5 py-2 bg-zinc-50 text-zinc-900 rounded-lg border border-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-500 focus:bg-white transition-all duration-300 placeholder-zinc-400" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-zinc-700">Kelayakan Profesional (Pisahkan dengan koma)</label>
-                    <input type="text" placeholder="AWS Certified Solutions Architect, Certified Executive Coach" value={professionalRaw} onChange={(e) => setProfessionalRaw(e.target.value)}
-                      className="w-full px-3.5 py-2 bg-zinc-50 text-zinc-900 rounded-lg border border-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-500 focus:bg-white transition-all duration-300 placeholder-zinc-400" />
-                  </div>
+                  <ListField
+                    label="Kelayakan Akademik"
+                    placeholder="Sarjana Muda Sains Komputer (UM)..."
+                    values={academicQualification}
+                    onChange={setAcademicQualification}
+                  />
+                  <ListField
+                    label="Kelayakan Profesional"
+                    placeholder="AWS Certified Solutions Architect..."
+                    values={professionalQualification}
+                    onChange={setProfessionalQualification}
+                  />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-zinc-700">Syarikat Terdahulu (Pisahkan dengan koma)</label>
-                    <input type="text" placeholder="Petronas Chemicals, Intel Malaysia, Shell" value={companiesRaw} onChange={(e) => setCompaniesRaw(e.target.value)}
-                      className="w-full px-3.5 py-2 bg-zinc-50 text-zinc-900 rounded-lg border border-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-500 focus:bg-white transition-all duration-300 placeholder-zinc-400" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-zinc-700">Topik Latihan Dijalankan (Pisahkan dengan koma)</label>
-                    <input type="text" placeholder="OSHA Compliance Training, Agile Project Management" value={trainingTopicsRaw} onChange={(e) => setTrainingTopicsRaw(e.target.value)}
-                      className="w-full px-3.5 py-2 bg-zinc-50 text-zinc-900 rounded-lg border border-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-500 focus:bg-white transition-all duration-300 placeholder-zinc-400" />
-                  </div>
+                  <ListField
+                    label="Syarikat Terdahulu"
+                    placeholder="Petronas Chemicals, Intel Malaysia..."
+                    values={previousCompanies}
+                    onChange={setPreviousCompanies}
+                  />
+                  <ListField
+                    label="Topik Latihan Dijalankan"
+                    placeholder="OSHA Compliance Training, Agile Project Management..."
+                    values={trainingTopics}
+                    onChange={setTrainingTopics}
+                  />
                 </div>
               </div>
             )}
@@ -567,18 +618,18 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd }: AddTrainerMo
                     className="w-full px-3.5 py-2 bg-zinc-50 text-zinc-900 rounded-lg border border-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-500 focus:bg-white transition-all duration-300 placeholder-zinc-400 resize-none" required />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-zinc-700">Tempoh</label>
-                    <input type="text" placeholder="Cth: 2 Hari (16 Jam)" value={courseDuration} onChange={(e) => setCourseDuration(e.target.value)}
-                      className="w-full px-3.5 py-2 bg-zinc-50 text-zinc-900 rounded-lg border border-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-500 focus:bg-white transition-all duration-300 placeholder-zinc-400" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-zinc-700">Objektif / Hasil Pembelajaran (Pisahkan dengan koma)</label>
-                    <input type="text" placeholder="Boleh mengurus keselamatan gas, Mahir penyelamatan kecemasan" value={courseOutcomesRaw} onChange={(e) => setCourseOutcomesRaw(e.target.value)}
-                      className="w-full px-3.5 py-2 bg-zinc-50 text-zinc-900 rounded-lg border border-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-500 focus:bg-white transition-all duration-300 placeholder-zinc-400" />
-                  </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-zinc-700">Tempoh</label>
+                  <input type="text" placeholder="Cth: 2 Hari (16 Jam)" value={courseDuration} onChange={(e) => setCourseDuration(e.target.value)}
+                    className="w-full px-3.5 py-2 bg-zinc-50 text-zinc-900 rounded-lg border border-zinc-200 text-sm focus:outline-none focus:ring-2 focus:ring-red-500/10 focus:border-red-500 focus:bg-white transition-all duration-300 placeholder-zinc-400" />
                 </div>
+
+                <ListField
+                  label="Objektif / Hasil Pembelajaran"
+                  placeholder="Boleh mengurus keselamatan gas, Mahir penyelamatan kecemasan..."
+                  values={courseOutcomes}
+                  onChange={setCourseOutcomes}
+                />
               </div>
             )}
           </form>
