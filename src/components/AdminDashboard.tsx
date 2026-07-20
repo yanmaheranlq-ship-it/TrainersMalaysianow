@@ -34,7 +34,6 @@ import {
   Cell,
   AreaChart,
   Area,
-  Legend,
 } from 'recharts';
 import { Trainer, PortfolioItem, CategoryType } from '../types';
 import { Registration } from '../App';
@@ -293,7 +292,7 @@ export default function AdminDashboard({
                 className="space-y-6"
               >
                 {/* Stat cards */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                   <StatCard label="Total Trainers" value={trainers.length} icon={Users} accent="#ef4444" />
                   <StatCard label="Total Programs" value={portfolios.length} icon={BookOpen} accent="#0ea5e9" />
                   <StatCard label="Registrations" value={registrations.length} icon={ClipboardList} accent="#f59e0b" />
@@ -340,7 +339,7 @@ export default function AdminDashboard({
                       </div>
                       <Sparkles size={16} className="text-red-400" />
                     </div>
-                    <ResponsiveContainer width="100%" height={240}>
+                    <ResponsiveContainer width="100%" height={200}>
                       <PieChart>
                         <Pie
                           data={categoryData}
@@ -348,8 +347,8 @@ export default function AdminDashboard({
                           nameKey="name"
                           cx="50%"
                           cy="50%"
-                          innerRadius={55}
-                          outerRadius={85}
+                          innerRadius={45}
+                          outerRadius={75}
                           paddingAngle={3}
                         >
                           {categoryData.map((entry, i) => (
@@ -364,13 +363,16 @@ export default function AdminDashboard({
                             fontSize: 12,
                           }}
                         />
-                        <Legend
-                          wrapperStyle={{ fontSize: 10, color: '#a1a1aa' }}
-                          iconType="circle"
-                          iconSize={8}
-                        />
                       </PieChart>
                     </ResponsiveContainer>
+                    <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5 mt-3">
+                      {categoryData.map((entry, i) => (
+                        <div key={i} className="flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full shrink-0" style={{ background: entry.color }} />
+                          <span className="text-[10px] text-zinc-400">{entry.name} ({entry.value})</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
@@ -471,110 +473,101 @@ export default function AdminDashboard({
                   </span>
                 </div>
 
-                <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-2xl overflow-hidden overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead className="bg-zinc-950/60 border-b border-zinc-800">
-                      <tr className="text-[10px] uppercase tracking-wider text-zinc-500 font-bold">
-                        <th className="px-4 py-3">Trainer</th>
-                        <th className="px-4 py-3 hidden md:table-cell">Category</th>
-                        <th
-                          className="px-4 py-3 cursor-pointer hover:text-white transition-colors"
-                          onClick={() => toggleSort('rating')}
-                        >
-                          <span className="flex items-center gap-1">
-                            Rating
-                            {sortKey === 'rating' &&
-                              (sortDir === 'desc' ? <ChevronDown size={11} /> : <ChevronUp size={11} />)}
-                          </span>
-                        </th>
-                        <th
-                          className="px-4 py-3 cursor-pointer hover:text-white transition-colors"
-                          onClick={() => toggleSort('projects')}
-                        >
-                          <span className="flex items-center gap-1">
-                            Projects
-                            {sortKey === 'projects' &&
-                              (sortDir === 'desc' ? <ChevronDown size={11} /> : <ChevronUp size={11} />)}
-                          </span>
-                        </th>
-                        <th className="px-4 py-3 hidden lg:table-cell">Contact</th>
-                        <th
-                          className="px-4 py-3 cursor-pointer hover:text-white transition-colors"
-                          onClick={() => toggleSort('name')}
-                        >
-                          <span className="flex items-center gap-1">
-                            Name
-                            {sortKey === 'name' &&
-                              (sortDir === 'asc' ? <ChevronDown size={11} /> : <ChevronUp size={11} />)}
-                          </span>
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredTrainers.map((t) => (
-                        <tr
-                          key={t.id}
-                          className="border-b border-zinc-850 hover:bg-zinc-850/40 transition-colors cursor-pointer"
-                          onClick={() => {
-                            onSelectTrainer(t);
-                            onClose();
-                          }}
-                        >
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-2.5">
-                              <img
-                                src={t.avatar}
-                                alt={t.name}
-                                className="w-8 h-8 rounded-lg object-cover border border-zinc-800 shrink-0"
-                                referrerPolicy="no-referrer"
-                              />
-                              <div className="min-w-0">
-                                <p className="text-xs font-bold text-white truncate max-w-[160px]">{t.name}</p>
-                                <p className="text-[10px] text-zinc-500 truncate max-w-[160px]">{t.title}</p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 hidden md:table-cell">
-                            <span
-                              className="px-2 py-0.5 rounded-full text-[10px] font-bold border"
-                              style={{
-                                color: CATEGORY_COLORS[t.category],
-                                borderColor: `${CATEGORY_COLORS[t.category]}40`,
-                                background: `${CATEGORY_COLORS[t.category]}15`,
-                              }}
-                            >
-                              {CATEGORY_LABELS[t.category]}
+                <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-2xl overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left min-w-[640px]">
+                      <thead className="bg-zinc-950/60 border-b border-zinc-800">
+                        <tr className="text-[10px] uppercase tracking-wider text-zinc-500 font-bold">
+                          <th className="px-4 py-3 w-[220px]">Trainer</th>
+                          <th className="px-4 py-3">Category</th>
+                          <th
+                            className="px-4 py-3 cursor-pointer hover:text-white transition-colors"
+                            onClick={() => toggleSort('rating')}
+                          >
+                            <span className="flex items-center gap-1">
+                              Rating
+                              {sortKey === 'rating' &&
+                                (sortDir === 'desc' ? <ChevronDown size={11} /> : <ChevronUp size={11} />)}
                             </span>
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-1">
-                              <Star size={11} className="fill-amber-500 text-amber-500" />
-                              <span className="text-xs font-bold text-amber-400">{t.rating.toFixed(2)}</span>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-xs text-zinc-300 font-semibold">{t.projectsCount}</td>
-                          <td className="px-4 py-3 hidden lg:table-cell">
-                            <div className="flex flex-col gap-0.5">
-                              <span className="text-[10px] text-zinc-400 flex items-center gap-1">
-                                <Mail size={9} /> {t.email}
-                              </span>
-                              <span className="text-[10px] text-zinc-500 flex items-center gap-1">
-                                <Phone size={9} /> {t.phone}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 text-xs text-zinc-400">{t.name}</td>
+                          </th>
+                          <th
+                            className="px-4 py-3 cursor-pointer hover:text-white transition-colors"
+                            onClick={() => toggleSort('projects')}
+                          >
+                            <span className="flex items-center gap-1">
+                              Projects
+                              {sortKey === 'projects' &&
+                                (sortDir === 'desc' ? <ChevronDown size={11} /> : <ChevronUp size={11} />)}
+                            </span>
+                          </th>
+                          <th className="px-4 py-3">Contact</th>
                         </tr>
-                      ))}
-                      {filteredTrainers.length === 0 && (
-                        <tr>
-                          <td colSpan={6} className="px-4 py-8 text-center text-zinc-500 text-xs">
-                            No trainers found.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {filteredTrainers.map((t) => (
+                          <tr
+                            key={t.id}
+                            className="border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors cursor-pointer"
+                            onClick={() => {
+                              onSelectTrainer(t);
+                              onClose();
+                            }}
+                          >
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2.5">
+                                <img
+                                  src={t.avatar}
+                                  alt={t.name}
+                                  className="w-8 h-8 rounded-lg object-cover border border-zinc-800 shrink-0"
+                                  referrerPolicy="no-referrer"
+                                />
+                                <div className="min-w-0">
+                                  <p className="text-xs font-bold text-white truncate">{t.name}</p>
+                                  <p className="text-[10px] text-zinc-500 truncate">{t.title}</p>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <span
+                                className="px-2 py-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap"
+                                style={{
+                                  color: CATEGORY_COLORS[t.category],
+                                  borderColor: `${CATEGORY_COLORS[t.category]}40`,
+                                  background: `${CATEGORY_COLORS[t.category]}15`,
+                                }}
+                              >
+                                {CATEGORY_LABELS[t.category]}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-1">
+                                <Star size={11} className="fill-amber-500 text-amber-500" />
+                                <span className="text-xs font-bold text-amber-400">{t.rating.toFixed(2)}</span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-xs text-zinc-300 font-semibold">{t.projectsCount}</td>
+                            <td className="px-4 py-3">
+                              <div className="flex flex-col gap-0.5">
+                                <span className="text-[10px] text-zinc-400 flex items-center gap-1 whitespace-nowrap">
+                                  <Mail size={9} /> {t.email}
+                                </span>
+                                <span className="text-[10px] text-zinc-500 flex items-center gap-1 whitespace-nowrap">
+                                  <Phone size={9} /> {t.phone}
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                        {filteredTrainers.length === 0 && (
+                          <tr>
+                            <td colSpan={5} className="px-4 py-8 text-center text-zinc-500 text-xs">
+                              No trainers found.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </motion.div>
             )}
@@ -663,8 +656,9 @@ export default function AdminDashboard({
                   accent="#f59e0b"
                   sub={`${feedbacks.length} feedbacks submitted`}
                 />
-                <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-2xl overflow-hidden overflow-x-auto">
-                  <table className="w-full text-left">
+                <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-2xl overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left min-w-[640px]">
                     <thead className="bg-zinc-950/60 border-b border-zinc-800">
                       <tr className="text-[10px] uppercase tracking-wider text-zinc-500 font-bold">
                         <th className="px-4 py-3">Ref ID</th>
@@ -716,6 +710,7 @@ export default function AdminDashboard({
                       )}
                     </tbody>
                   </table>
+                  </div>
                 </div>
               </motion.div>
             )}
