@@ -282,7 +282,7 @@ export default function TopRankingTrainers({ trainers, onSelectTrainer }: TopRan
     }
   };
 
-  // Helper for Rank Badges & Styles with Apple-style Minimalism
+  // Helper for Rank Badges & Styles
   const getRankMeta = (index: number) => {
     switch (index) {
       case 0:
@@ -291,11 +291,20 @@ export default function TopRankingTrainers({ trainers, onSelectTrainer }: TopRan
           colorClass: 'shadow-amber-500/10 ring-1 ring-amber-500/10',
           glowClass: 'from-amber-400/8 via-amber-200/4 to-transparent',
           badgeClass: 'bg-amber-950/60 text-amber-300 border-amber-900/40',
-          icon: <Crown className="text-amber-400 animate-pulse" size={14} />,
+          // Card badge pill styles
+          badgeBg: 'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500',
+          badgeShadow: 'shadow-[0_0_18px_rgba(245,158,11,0.65),0_2px_8px_rgba(0,0,0,0.4)]',
+          badgeBorder: 'border-yellow-300/50',
+          badgeTextColor: 'text-amber-950',
+          rankPillBg: 'bg-gradient-to-br from-amber-400/30 to-amber-600/20 border-amber-400/50',
+          rankTextColor: 'text-amber-300',
+          icon: <Crown className="text-amber-950" size={12} />,
+          tableIcon: <Crown className="text-amber-400 fill-amber-400 animate-pulse" size={11} />,
+          tableRankBg: 'bg-gradient-to-br from-amber-500/25 to-amber-700/10 text-amber-300 border-amber-400/40 shadow-[0_0_10px_rgba(245,158,11,0.2)]',
           medalText: '1st Place',
           label: 'First-Class Trainer',
           titleColor: 'text-white',
-          badgeLabel: 'Gold Trainer',
+          badgeLabel: 'GOLD',
           rankColor: 'text-amber-400'
         };
       case 1:
@@ -304,12 +313,20 @@ export default function TopRankingTrainers({ trainers, onSelectTrainer }: TopRan
           colorClass: 'shadow-zinc-500/10 ring-1 ring-zinc-500/10',
           glowClass: 'from-zinc-400/6 via-zinc-200/3 to-transparent',
           badgeClass: 'bg-zinc-900 text-zinc-300 border-zinc-800',
-          icon: <Trophy className="text-zinc-400" size={13} />,
+          badgeBg: 'bg-gradient-to-r from-zinc-300 via-white to-zinc-300',
+          badgeShadow: 'shadow-[0_0_18px_rgba(212,212,216,0.55),0_2px_8px_rgba(0,0,0,0.4)]',
+          badgeBorder: 'border-white/60',
+          badgeTextColor: 'text-zinc-700',
+          rankPillBg: 'bg-gradient-to-br from-zinc-300/20 to-zinc-500/10 border-zinc-300/40',
+          rankTextColor: 'text-zinc-200',
+          icon: <Trophy className="text-zinc-600" size={12} />,
+          tableIcon: <Trophy className="text-zinc-300 fill-zinc-400" size={10} />,
+          tableRankBg: 'bg-gradient-to-br from-zinc-300/20 to-zinc-500/10 text-zinc-200 border-zinc-300/40 shadow-[0_0_8px_rgba(212,212,216,0.1)]',
           medalText: '2nd Place',
           label: 'High-Performing Trainer',
           titleColor: 'text-white',
-          badgeLabel: 'Silver Trainer',
-          rankColor: 'text-zinc-400'
+          badgeLabel: 'SILVER',
+          rankColor: 'text-zinc-300'
         };
       case 2:
         return {
@@ -317,11 +334,19 @@ export default function TopRankingTrainers({ trainers, onSelectTrainer }: TopRan
           colorClass: 'shadow-orange-700/10 ring-1 ring-orange-700/10',
           glowClass: 'from-orange-600/6 via-orange-300/3 to-transparent',
           badgeClass: 'bg-orange-950/60 text-orange-300 border-orange-900/40',
-          icon: <Award className="text-orange-400" size={13} />,
+          badgeBg: 'bg-gradient-to-r from-orange-600 via-amber-500 to-orange-600',
+          badgeShadow: 'shadow-[0_0_18px_rgba(234,88,12,0.6),0_2px_8px_rgba(0,0,0,0.4)]',
+          badgeBorder: 'border-orange-300/40',
+          badgeTextColor: 'text-orange-950',
+          rankPillBg: 'bg-gradient-to-br from-orange-400/25 to-orange-600/15 border-orange-400/40',
+          rankTextColor: 'text-orange-300',
+          icon: <Medal className="text-orange-950" size={12} />,
+          tableIcon: <Medal className="text-orange-400 fill-orange-400" size={10} />,
+          tableRankBg: 'bg-gradient-to-br from-orange-500/20 to-orange-700/10 text-orange-300 border-orange-400/35 shadow-[0_0_8px_rgba(234,88,12,0.15)]',
           medalText: '3rd Place',
           label: 'Lead Key Trainer',
           titleColor: 'text-white',
-          badgeLabel: 'Bronze Trainer',
+          badgeLabel: 'BRONZE',
           rankColor: 'text-orange-400'
         };
       case 3:
@@ -330,12 +355,20 @@ export default function TopRankingTrainers({ trainers, onSelectTrainer }: TopRan
           colorClass: 'shadow-blue-500/10 ring-1 ring-blue-500/10',
           glowClass: 'from-blue-400/8 via-sky-200/4 to-transparent',
           badgeClass: 'bg-blue-950/60 text-blue-300 border-blue-900/40',
-          icon: <Award className="text-blue-400" size={13} />,
+          badgeBg: 'bg-gradient-to-r from-sky-400 via-blue-300 to-sky-400',
+          badgeShadow: 'shadow-[0_0_16px_rgba(56,189,248,0.5),0_2px_8px_rgba(0,0,0,0.4)]',
+          badgeBorder: 'border-sky-200/50',
+          badgeTextColor: 'text-sky-900',
+          rankPillBg: 'bg-gradient-to-br from-sky-400/20 to-blue-600/10 border-sky-400/35',
+          rankTextColor: 'text-sky-300',
+          icon: <Sparkles className="text-sky-900" size={11} />,
+          tableIcon: <Award className="text-sky-400" size={10} />,
+          tableRankBg: 'bg-gradient-to-br from-sky-500/20 to-blue-700/10 text-sky-300 border-sky-400/30 shadow-[0_0_8px_rgba(56,189,248,0.1)]',
           medalText: '4th Place',
           label: 'Top Choice Trainer',
           titleColor: 'text-white',
-          badgeLabel: 'Platinum Trainer',
-          rankColor: 'text-blue-400'
+          badgeLabel: 'PLATINUM',
+          rankColor: 'text-sky-400'
         };
       case 4:
         return {
@@ -343,11 +376,19 @@ export default function TopRankingTrainers({ trainers, onSelectTrainer }: TopRan
           colorClass: 'shadow-emerald-500/10 ring-1 ring-emerald-500/10',
           glowClass: 'from-emerald-400/8 via-emerald-200/4 to-transparent',
           badgeClass: 'bg-emerald-950/60 text-emerald-300 border-emerald-900/40',
-          icon: <Award className="text-emerald-400" size={13} />,
+          badgeBg: 'bg-gradient-to-r from-emerald-500 via-green-400 to-emerald-500',
+          badgeShadow: 'shadow-[0_0_16px_rgba(52,211,153,0.5),0_2px_8px_rgba(0,0,0,0.4)]',
+          badgeBorder: 'border-emerald-300/40',
+          badgeTextColor: 'text-emerald-950',
+          rankPillBg: 'bg-gradient-to-br from-emerald-400/20 to-emerald-600/10 border-emerald-400/35',
+          rankTextColor: 'text-emerald-300',
+          icon: <Star className="text-emerald-950 fill-emerald-950" size={11} />,
+          tableIcon: <Award className="text-emerald-400" size={10} />,
+          tableRankBg: 'bg-gradient-to-br from-emerald-500/20 to-emerald-700/10 text-emerald-300 border-emerald-400/30 shadow-[0_0_8px_rgba(52,211,153,0.1)]',
           medalText: '5th Place',
           label: 'Talented Trainer',
           titleColor: 'text-white',
-          badgeLabel: 'Emerald Trainer',
+          badgeLabel: 'EMERALD',
           rankColor: 'text-emerald-400'
         };
       default:
@@ -356,11 +397,19 @@ export default function TopRankingTrainers({ trainers, onSelectTrainer }: TopRan
           colorClass: 'bg-zinc-900',
           glowClass: 'from-zinc-400/5 to-transparent',
           badgeClass: 'bg-zinc-900 text-zinc-300 border-zinc-800',
-          icon: <Award className="text-zinc-400" size={13} />,
+          badgeBg: 'bg-zinc-800',
+          badgeShadow: 'shadow-md',
+          badgeBorder: 'border-zinc-700/40',
+          badgeTextColor: 'text-zinc-300',
+          rankPillBg: 'bg-zinc-800/50 border-zinc-700/30',
+          rankTextColor: 'text-zinc-400',
+          icon: <Award className="text-zinc-400" size={12} />,
+          tableIcon: <Award className="text-zinc-400" size={10} />,
+          tableRankBg: 'bg-zinc-900/50 text-zinc-400 border-zinc-800/80',
           medalText: `Rank ${index + 1}`,
           label: 'Certified Trainer',
           titleColor: 'text-white',
-          badgeLabel: 'Trainer',
+          badgeLabel: 'TRAINER',
           rankColor: 'text-zinc-400'
         };
     }
@@ -590,14 +639,17 @@ export default function TopRankingTrainers({ trainers, onSelectTrainer }: TopRan
 
                 {/* Overlaid Badge & Rank Row */}
                 <div className="relative z-20 p-3.5 md:p-5 pb-0 flex items-center justify-between w-full">
-                  <span className={`px-2 py-1 md:px-3 md:py-1.5 rounded-full text-[8px] md:text-[10px] font-extrabold uppercase tracking-wider border flex items-center gap-1 shadow-sm bg-black/50 backdrop-blur-md text-white border-white/20`}>
-                    {meta.icon}
-                    {meta.badgeLabel}
+                  <span className={`relative overflow-hidden px-2.5 py-1 md:px-3.5 md:py-1.5 rounded-full text-[8px] md:text-[10px] font-black uppercase tracking-wider border flex items-center gap-1 ${meta.badgeBg} ${meta.badgeBorder} ${meta.badgeTextColor} ${meta.badgeShadow}`}>
+                    <span className="absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-white/40 to-transparent -skew-x-12 animate-[shimmer_2.5s_ease-in-out_infinite]" />
+                    <span className="relative z-10 flex items-center gap-1">
+                      {meta.icon}
+                      {meta.badgeLabel}
+                    </span>
                   </span>
                   
-                  <div className="flex items-center gap-1 bg-black/50 backdrop-blur-md border border-white/20 px-2.5 py-1 rounded-full shadow-md text-[9px] md:text-xs font-bold text-white">
+                  <div className={`flex items-center gap-1 ${meta.rankPillBg} backdrop-blur-md px-2.5 py-1 rounded-full shadow-md text-[9px] md:text-xs font-bold`}>
                     <span className="text-zinc-300 font-semibold">Rank</span>
-                    <span className={`font-black text-xs md:text-sm ${meta.rankColor}`}>#{meta.rank}</span>
+                    <span className={`font-black text-xs md:text-sm ${meta.rankTextColor}`}>#{meta.rank}</span>
                   </div>
                 </div>
 
@@ -840,7 +892,7 @@ export default function TopRankingTrainers({ trainers, onSelectTrainer }: TopRan
 
                     {/* Rank Badge & Delta Indicator */}
                     <div className="flex items-center justify-center z-10">
-                      <div className="relative flex items-center justify-center w-6.5 h-6.5">
+                      <div className="relative flex items-center justify-center w-7 h-7">
                         {/* Futuristic live update expanding rings */}
                         {trainer.id === lastUpdatedTrainerId && (Date.now() - lastUpdateTimestamp < 6000) && (
                           <div className="absolute inset-0 pointer-events-none z-10">
@@ -848,8 +900,8 @@ export default function TopRankingTrainers({ trainers, onSelectTrainer }: TopRan
                           </div>
                         )}
 
-                        <div className={`w-6.5 h-6.5 rounded-full border flex items-center justify-center font-extrabold text-xs shadow-inner transition-all duration-300 group-hover:scale-105 shrink-0 ${rankBg}`}>
-                          {rankBadge ? rankBadge : index + 1}
+                        <div className={`w-7 h-7 rounded-full border flex items-center justify-center font-extrabold text-xs transition-all duration-300 group-hover:scale-110 shrink-0 ${meta.tableRankBg}`}>
+                          {meta.tableIcon ? meta.tableIcon : index + 1}
                         </div>
                         
                         {/* Floating Rank Delta Indicator perfectly aligned relative to the badge container */}
@@ -957,19 +1009,7 @@ export default function TopRankingTrainers({ trainers, onSelectTrainer }: TopRan
           <AnimatePresence initial={false}>
             {sortedTrainers.slice(0, showAllMobile ? 10 : 5).map((trainer, index) => {
               const isTopThree = index < 3;
-              let rankBg = 'bg-zinc-900 text-zinc-400 border-zinc-800';
-              let rankBadge = null;
-
-              if (index === 0) {
-                rankBadge = <Crown className="text-amber-400 fill-amber-400" size={10} />;
-                rankBg = 'bg-amber-950/40 text-amber-300 border-amber-500/20';
-              } else if (index === 1) {
-                rankBadge = <Trophy className="text-zinc-300 fill-zinc-400" size={9} />;
-                rankBg = 'bg-zinc-900 text-zinc-300 border-zinc-700/50';
-              } else if (index === 2) {
-                rankBadge = <Medal className="text-orange-400 fill-orange-400" size={9} />;
-                rankBg = 'bg-orange-950/40 text-orange-300 border-orange-500/20';
-              }
+              const meta = getRankMeta(index);
 
               // Calculate rank changes compared to prevRanksMap for mobile
               const prevRankIndex = prevRanksMap[trainer.id];
@@ -1039,8 +1079,8 @@ export default function TopRankingTrainers({ trainers, onSelectTrainer }: TopRan
                         </div>
                       )}
 
-                      <div className={`w-5.5 h-5.5 rounded-full border flex items-center justify-center font-extrabold text-[10px] shadow-inner ${rankBg}`}>
-                        {rankBadge ? rankBadge : index + 1}
+                      <div className={`w-6 h-6 rounded-full border flex items-center justify-center font-extrabold text-[10px] ${meta.tableRankBg}`}>
+                        {meta.tableIcon ? meta.tableIcon : index + 1}
                       </div>
                       {rankDeltaIndicator && (
                         <div className="absolute -bottom-1 -right-1 z-10">

@@ -37,3 +37,9 @@ h1, h2, h3, h4, h5, h6, .font-display, [id*="logo"] {
   overscroll-behavior-x: contain;
   touch-action: pan-x;
 }
+
+/* Shimmer animation for top-trainer metallic badges */
+@keyframes shimmer {
+  0% { transform: translateX(-150%); }
+  100% { transform: translateX(450%); }
+}
