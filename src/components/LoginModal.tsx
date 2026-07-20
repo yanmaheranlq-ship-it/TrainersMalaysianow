@@ -12,8 +12,8 @@ interface LoginModalProps {
 
 export default function LoginModal({ isOpen, onClose, onLoginSuccess, trainers = [] }: LoginModalProps) {
   const [loginType, setLoginType] = useState<'admin' | 'trainer'>('admin');
-  const [email, setEmail] = useState('admin@trainerpreneur.world');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -76,29 +76,13 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, trainers =
     }, 1200);
   };
 
-  const fillDemoCredentials = () => {
-    if (loginType === 'admin') {
-      setEmail('admin@trainerpreneur.world');
-      setPassword('password123');
-    } else {
-      // Pick first trainer if available, or fallback
-      const targetTrainer = trainers[0] || { email: 'fadhil.sho@industrial-safety.my' };
-      setEmail(targetTrainer.email);
-      setPassword('password123');
-    }
-  };
+
 
   const handleSwitchType = (type: 'admin' | 'trainer') => {
     setLoginType(type);
     setError('');
-    if (type === 'admin') {
-      setEmail('admin@trainerpreneur.world');
-      setPassword('password123');
-    } else {
-      const targetTrainer = trainers[0];
-      setEmail(targetTrainer ? targetTrainer.email : 'fadhil.sho@industrial-safety.my');
-      setPassword('password123');
-    }
+    setEmail('');
+    setPassword('');
   };
 
   return (
@@ -222,56 +206,6 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, trainers =
                   </motion.div>
                 )}
 
-                {/* Helper credentials box */}
-                <div className="p-3 bg-zinc-950/60 border border-zinc-800/40 rounded-xl space-y-2.5 text-left">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-zinc-500 block uppercase tracking-wider">
-                      {loginType === 'admin' ? 'Official Demo Account' : 'Trainer Account (Demo)'}
-                    </span>
-                    <span className="text-[9px] font-bold text-red-400 bg-red-500/10 px-1.5 py-0.5 rounded border border-red-500/20 uppercase">
-                      Pass: password123
-                    </span>
-                  </div>
-
-                  {loginType === 'admin' ? (
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-xs font-semibold text-zinc-350 block truncate">
-                        admin@trainerpreneur.world
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEmail('admin@trainerpreneur.world');
-                          setPassword('password123');
-                        }}
-                        className="px-2.5 py-1 text-[10px] font-extrabold bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg transition-all cursor-pointer hover:scale-102 shrink-0"
-                      >
-                        Select Account
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="space-y-1.5 max-h-[140px] overflow-y-auto pr-1">
-                      {trainers.slice(0, 4).map((t) => (
-                        <div key={t.id} className="flex items-center justify-between gap-2 p-1.5 bg-zinc-900/40 hover:bg-zinc-900 border border-zinc-850 hover:border-red-500/30 rounded-lg transition-all text-xs">
-                          <div className="overflow-hidden">
-                            <span className="font-bold text-white block text-[11px] truncate">{t.name}</span>
-                            <span className="text-[9px] text-zinc-400 block truncate">{t.email}</span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEmail(t.email);
-                              setPassword(t.password || 'password123');
-                            }}
-                            className="px-2 py-1 text-[9px] font-black uppercase tracking-wider bg-red-500/10 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/15 rounded-md transition-all cursor-pointer shrink-0"
-                          >
-                            Select
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
 
                 {/* Email Input */}
                 <div className="space-y-1.5">
