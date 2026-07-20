@@ -969,6 +969,7 @@ export default function App() {
       </main>
 
       {/* Interactive Trainer Detailed Profile Modal */}
+      {selectedTrainer && (
       <TrainerDetailModal
         trainer={selectedTrainer}
         portfolios={portfolios}
@@ -985,6 +986,7 @@ export default function App() {
           setUrlAction({ type: 'feedback', programId, trainerId });
         }}
       />
+      )}
 
       {/* Interactive Registration / Addition Modal */}
       <AddTrainerModal
