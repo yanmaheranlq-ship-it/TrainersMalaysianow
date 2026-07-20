@@ -4,7 +4,7 @@ import { X, Award, Mail, Phone, Star, Briefcase, CheckCircle2, Clock, BookOpen, 
 import { Trainer, PortfolioItem, FeedbackItem } from '../types';
 import TrainerSalesAnalytics from './TrainerSalesAnalytics';
 import { HRDCorpBadges } from './HRDCorpBadges';
-import { showToast } from './Toast';
+import { showToast, showConfirm } from './Toast';
 
 export function parseQualification(text: string) {
   // Match things like ' — 2020', ' - 2020', ' (2020)', ' 2020' at the end of string
@@ -527,10 +527,17 @@ export default function TrainerDetailModal({
     setEditingPortfolioItem(null);
   };
 
-  const handleDeletePortfolio = (portfolioId: string) => {
-    const confirmDelete = window.confirm('Adakah anda pasti mahu memadam program latihan ini?');
+  const handleDeletePortfolio = async (portfolioId: string) => {
+    const confirmDelete = await showConfirm({
+      title: 'Padam Program Latihan',
+      message: 'Adakah anda pasti mahu memadam program latihan ini? Tindakan ini tidak boleh dibuat asal.',
+      confirmLabel: 'Padam',
+      cancelLabel: 'Batal',
+      variant: 'danger',
+    });
     if (confirmDelete && onUpdatePortfolios) {
       onUpdatePortfolios(portfolios.filter(p => p.id !== portfolioId));
+      showToast('Program latihan berjaya dipadam.', 'success');
     }
   };
 

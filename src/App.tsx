@@ -40,7 +40,7 @@ import TrainerDetailModal from './components/TrainerDetailModal';
 import AddTrainerModal from './components/AddTrainerModal';
 import LoginModal from './components/LoginModal';
 import TopRankingTrainers from './components/TopRankingTrainers';
-import { ToastContainer, showToast } from './components/Toast';
+import { ToastContainer, ConfirmDialogContainer, showToast } from './components/Toast';
 import { supabase } from './lib/supabase';
 
 // --- DB row <-> TS model mappers ---
@@ -1019,6 +1019,7 @@ export default function App() {
       />
 
       <ToastContainer />
+      <ConfirmDialogContainer />
 
       {/* REGISTRATION MODAL OVERLAY */}
       <AnimatePresence>
