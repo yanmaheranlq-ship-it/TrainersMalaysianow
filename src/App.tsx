@@ -326,6 +326,7 @@ export default function App() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isAdminDashboardOpen, setIsAdminDashboardOpen] = useState(false);
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<string | null>(() => {
     return safeLocalStorage.getItem('trainer_gallery_user');
   });
@@ -799,19 +800,7 @@ export default function App() {
 
                 {/* Log Keluar Button */}
                 <button
-                  onClick={() => {
-                    let confirmLogout = true;
-                    try {
-                      confirmLogout = window.confirm('Are you sure you want to log out of the system?');
-                    } catch (e) {
-                      console.warn("window.confirm is blocked in this environment.", e);
-                    }
-                    if (confirmLogout) {
-                      setCurrentUser(null);
-                      setCurrentUserRole(null);
-                      setCurrentLoggedTrainerId(null);
-                    }
-                  }}
+                  onClick={() => setIsLogoutConfirmOpen(true)}
                   className="px-2.5 xs:px-3 py-1.5 rounded-full bg-red-950/45 hover:bg-red-900/50 text-red-400 hover:text-red-300 font-bold text-[11px] border border-red-900/50 hover:border-red-500/60 backdrop-blur-md transition-all duration-300 flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-95 shrink-0"
                   id="logout-btn"
                 >
@@ -1033,6 +1022,69 @@ export default function App() {
         }}
         trainers={trainers}
       />
+
+      {/* Logout Confirmation Modal */}
+      <AnimatePresence>
+        {isLogoutConfirmOpen && (
+          <motion.div
+            key="logout-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+            onClick={() => setIsLogoutConfirmOpen(false)}
+          >
+            <motion.div
+              key="logout-dialog"
+              initial={{ opacity: 0, scale: 0.92, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: 16 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+              className="bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Top accent bar */}
+              <div className="h-1 w-full bg-gradient-to-r from-red-700 via-red-500 to-red-700" />
+
+              <div className="p-6 flex flex-col items-center gap-5 text-center">
+                {/* Icon */}
+                <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
+                  <LogIn size={24} className="text-red-400 rotate-180" />
+                </div>
+
+                {/* Text */}
+                <div className="space-y-1.5">
+                  <h3 className="text-base font-extrabold text-white tracking-tight">Log Out?</h3>
+                  <p className="text-xs text-zinc-400 leading-relaxed max-w-[240px] mx-auto">
+                    Anda akan keluar dari sistem. Sesi semasa akan ditamatkan.
+                  </p>
+                </div>
+
+                {/* Buttons */}
+                <div className="flex items-center gap-3 w-full pt-1">
+                  <button
+                    onClick={() => setIsLogoutConfirmOpen(false)}
+                    className="flex-1 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white font-bold text-xs border border-zinc-700 hover:border-zinc-600 transition-all duration-200 cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    onClick={() => {
+                      setCurrentUser(null);
+                      setCurrentUserRole(null);
+                      setCurrentLoggedTrainerId(null);
+                      setIsLogoutConfirmOpen(false);
+                    }}
+                    className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-extrabold text-xs border border-red-600 hover:border-red-500 transition-all duration-200 cursor-pointer shadow-lg shadow-red-600/20"
+                  >
+                    Ya, Log Out
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Admin Monitoring Dashboard */}
       <AdminDashboard
