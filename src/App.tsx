@@ -39,6 +39,7 @@ import TrainerBentoGrid from './components/TrainerBentoGrid';
 import TrainerDetailModal from './components/TrainerDetailModal';
 import AddTrainerModal from './components/AddTrainerModal';
 import LoginModal from './components/LoginModal';
+import AdminDashboard from './components/AdminDashboard';
 import TopRankingTrainers from './components/TopRankingTrainers';
 import { ToastContainer, ConfirmDialogContainer, showToast } from './components/Toast';
 import { supabase } from './lib/supabase';
@@ -324,6 +325,7 @@ export default function App() {
   }, [selectedTrainer, urlAction]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isAdminDashboardOpen, setIsAdminDashboardOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<string | null>(() => {
     return safeLocalStorage.getItem('trainer_gallery_user');
   });
@@ -764,6 +766,18 @@ export default function App() {
                   <span>Access: {currentUserRole === 'admin' ? 'Admin' : 'Trainer'}</span>
                 </div>
 
+                {currentUserRole === 'admin' && (
+                  <button
+                    onClick={() => setIsAdminDashboardOpen(true)}
+                    className="px-2.5 xs:px-3.5 py-1.5 rounded-full bg-red-600 hover:bg-red-500 text-white font-black text-[11px] uppercase tracking-wider flex items-center gap-1.5 transition-all duration-300 hover:scale-102 shadow-[0_2px_8px_rgba(239,68,68,0.25)] hover:shadow-[0_4px_12px_rgba(239,68,68,0.4)] cursor-pointer shrink-0"
+                    title="Admin Monitoring Dashboard"
+                    id="admin-dashboard-btn"
+                  >
+                    <ShieldCheck size={12} className="stroke-[2.5]" />
+                    <span className="hidden xs:inline">Dashboard</span>
+                  </button>
+                )}
+
                 {currentUserRole === 'trainer' && currentLoggedTrainerId && (
                   <button
                     onClick={() => {
@@ -1018,6 +1032,17 @@ export default function App() {
           }
         }}
         trainers={trainers}
+      />
+
+      {/* Admin Monitoring Dashboard */}
+      <AdminDashboard
+        isOpen={isAdminDashboardOpen}
+        onClose={() => setIsAdminDashboardOpen(false)}
+        trainers={trainers}
+        portfolios={portfolios}
+        registrations={registrations}
+        feedbacks={feedbacks}
+        onSelectTrainer={setSelectedTrainer}
       />
 
       {/* REGISTRATION MODAL OVERLAY */}
