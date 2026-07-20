@@ -1,10 +1,27 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Award, Mail, Phone, Star, Briefcase, CheckCircle2, Clock, BookOpen, Linkedin, Twitter, QrCode, Copy, Check, Download, Trophy, Medal, Crown, Sparkles, Camera, Upload, Plus, Trash2, Edit3, Save, FileText, Image, Share2, Link2, MessageSquare, GraduationCap, Building2 } from 'lucide-react';
+import { X, Award, Mail, Phone, Star, Briefcase, CheckCircle2, Clock, BookOpen, Linkedin, Twitter, QrCode, Copy, Check, Download, Trophy, Medal, Crown, Sparkles, Camera, Upload, Plus, Trash2, Edit3, Save, FileText, Image, Share2, Link2, MessageSquare, GraduationCap, Building2, Loader2 } from 'lucide-react';
 import { Trainer, PortfolioItem, FeedbackItem } from '../types';
 import TrainerSalesAnalytics from './TrainerSalesAnalytics';
 import { HRDCorpBadges } from './HRDCorpBadges';
 import { showToast, showConfirm } from './Toast';
+import { supabase } from '../lib/supabase';
+
+const AVATAR_BUCKET = 'trainer-avatars';
+
+const uploadAvatarToStorage = async (trainerId: string, file: File): Promise<string | null> => {
+  const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+  const path = `${trainerId}/avatar-${Date.now()}.${ext}`;
+  const { error: upErr } = await supabase.storage
+    .from(AVATAR_BUCKET)
+    .upload(path, file, { cacheControl: '3600', upsert: true });
+  if (upErr) {
+    console.error('avatar upload failed:', upErr.message);
+    return null;
+  }
+  const { data } = supabase.storage.from(AVATAR_BUCKET).getPublicUrl(path);
+  return data?.publicUrl || null;
+};
 
 export function parseQualification(text: string) {
   // Match things like ' — 2020', ' - 2020', ' (2020)', ' 2020' at the end of string
@@ -272,6 +289,7 @@ export default function TrainerDetailModal({
   const [editCertificationsRaw, setEditCertificationsRaw] = useState(trainer.certifications.join(', '));
   const [editSkillsRaw, setEditSkillsRaw] = useState(trainer.skills.join(', '));
   const [editAvatar, setEditAvatar] = useState(trainer.avatar);
+  const [pendingAvatarFile, setPendingAvatarFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
 
   // New Fields edit states
@@ -295,6 +313,7 @@ export default function TrainerDetailModal({
     setEditCertificationsRaw(trainer.certifications.join(', '));
     setEditSkillsRaw(trainer.skills.join(', '));
     setEditAvatar(trainer.avatar);
+    setPendingAvatarFile(null);
     setIsDragging(false);
 
     // Reset new fields
@@ -314,6 +333,7 @@ export default function TrainerDetailModal({
       return;
     }
 
+    setPendingAvatarFile(file);
     const reader = new FileReader();
     reader.onload = (event) => {
       if (event.target?.result) {
@@ -348,10 +368,25 @@ export default function TrainerDetailModal({
     }
   };
 
-  const handleSave = () => {
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+
+  const handleSave = async () => {
     if (!editName.trim() || !editTitle.trim() || !editBio.trim() || !editEmail.trim()) {
       showToast('Sila isi maklumat mandatori.', 'error');
       return;
+    }
+
+    setIsSavingProfile(true);
+    let finalAvatar = editAvatar;
+    if (pendingAvatarFile) {
+      const publicUrl = await uploadAvatarToStorage(trainer.id, pendingAvatarFile);
+      if (publicUrl) {
+        finalAvatar = publicUrl;
+      } else {
+        showToast('Gagal memuat naik gambar. Cuba lagi.', 'error');
+        setIsSavingProfile(false);
+        return;
+      }
     }
 
     const updatedTrainer: Trainer = {
@@ -364,7 +399,7 @@ export default function TrainerDetailModal({
       phone: editPhone.trim() || '+60 12-345 6789',
       certifications: editCertificationsRaw.split(',').map(c => c.trim()).filter(Boolean),
       skills: editSkillsRaw.split(',').map(s => s.trim()).filter(Boolean),
-      avatar: editAvatar,
+      avatar: finalAvatar,
       academicQualification: editAcademicRaw.split(',').map(a => a.trim()).filter(Boolean),
       professionalQualification: editProfessionalRaw.split(',').map(p => p.trim()).filter(Boolean),
       previousCompanies: editCompaniesRaw.split(',').map(c => c.trim()).filter(Boolean),
@@ -374,7 +409,10 @@ export default function TrainerDetailModal({
     if (onUpdateTrainer) {
       onUpdateTrainer(updatedTrainer);
     }
+    setPendingAvatarFile(null);
+    setIsSavingProfile(false);
     setIsEditing(false);
+    showToast('Profil berjaya dikemas kini.', 'success');
   };
 
   // States for adding/editing portfolio item
@@ -998,10 +1036,20 @@ export default function TrainerDetailModal({
                     <div className="flex gap-2.5 pt-2">
                       <button
                         onClick={handleSave}
-                        className="px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white font-black text-xs uppercase tracking-widest rounded-full transition-all cursor-pointer flex items-center gap-1.5 shadow-md hover:scale-102"
+                        disabled={isSavingProfile}
+                        className="px-5 py-2.5 bg-red-600 hover:bg-red-500 disabled:bg-red-400 disabled:cursor-not-allowed text-white font-black text-xs uppercase tracking-widest rounded-full transition-all cursor-pointer flex items-center gap-1.5 shadow-md hover:scale-102"
                       >
-                        <CheckCircle2 size={13} />
-                        Simpan Profil
+                        {isSavingProfile ? (
+                          <>
+                            <Loader2 size={13} className="animate-spin" />
+                            Menyimpan...
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle2 size={13} />
+                            Simpan Profil
+                          </>
+                        )}
                       </button>
                       <button
                         onClick={() => setIsEditing(false)}
