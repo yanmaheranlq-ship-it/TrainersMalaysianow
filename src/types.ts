@@ -14,6 +14,9 @@ export interface Trainer {
   email: string;
   phone: string;
   password?: string; // Optional password for trainer login
+  icNumber?: string; // IC Number (MyKad)
+  tttCertNo?: string; // TTT Cert / Exemption Cert No
+  avatarFile?: File | null; // transient upload, not persisted
   featured: boolean;
   projectsCount: number;
   socials?: {

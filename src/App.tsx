@@ -48,6 +48,7 @@ type TrainerRow = {
   bio: string | null; rating: number; experience: string | null;
   certifications: string[] | null; skills: string[] | null;
   email: string | null; phone: string | null; password: string | null;
+  ic_number: string | null; ttt_cert_no: string | null;
   featured: boolean; projects_count: number; socials: any;
   academic_qualification: string[] | null; professional_qualification: string[] | null;
   previous_companies: string[] | null; training_topics: string[] | null;
@@ -58,7 +59,10 @@ const mapTrainer = (r: TrainerRow): Trainer => ({
   avatar: r.avatar || '', bio: r.bio || '', rating: Number(r.rating) || 0,
   experience: r.experience || '', certifications: r.certifications || [],
   skills: r.skills || [], email: r.email || '', phone: r.phone || '',
-  password: r.password || undefined, featured: r.featured,
+  password: r.password || undefined,
+  icNumber: r.ic_number || undefined,
+  tttCertNo: r.ttt_cert_no || undefined,
+  featured: r.featured,
   projectsCount: r.projects_count || 0, socials: r.socials || undefined,
   academicQualification: r.academic_qualification || undefined,
   professionalQualification: r.professional_qualification || undefined,
@@ -70,6 +74,8 @@ const trainerToRow = (t: Trainer) => ({
   avatar: t.avatar, bio: t.bio, rating: t.rating, experience: t.experience,
   certifications: t.certifications, skills: t.skills,
   email: t.email, phone: t.phone, password: t.password || null,
+  ic_number: t.icNumber || null,
+  ttt_cert_no: t.tttCertNo || null,
   featured: t.featured, projects_count: t.projectsCount,
   socials: t.socials || null,
   academic_qualification: t.academicQualification || null,
