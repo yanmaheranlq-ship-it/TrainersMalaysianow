@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { CheckCircle, AlertTriangle, Info, X, Trash2 } from 'lucide-react';
 
@@ -145,7 +146,7 @@ export function ConfirmDialogContainer() {
   const variant = state?.variant ?? 'danger';
   const styles = CONFIRM_VARIANT_STYLES[variant];
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {state && (
         <motion.div
@@ -154,8 +155,8 @@ export function ConfirmDialogContainer() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.18 }}
-          className="fixed inset-0 z-[300] flex items-center justify-center p-6"
-          style={{ backgroundColor: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)' }}
+          className="fixed inset-0 flex items-center justify-center p-6"
+          style={{ zIndex: 99999, backgroundColor: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)' }}
           onClick={(e) => { if (e.target === e.currentTarget) handleResponse(false); }}
         >
           <motion.div
@@ -198,6 +199,7 @@ export function ConfirmDialogContainer() {
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
