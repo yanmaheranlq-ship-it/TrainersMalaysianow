@@ -10,7 +10,7 @@ import {
   CheckCircle,
   Users,
   BookOpen,
-  GraduationCap,
+
   Sparkles,
   Info,
   ChevronRight,
@@ -736,25 +736,12 @@ export default function App() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
           {/* Logo Section */}
-          <div className="flex items-center gap-2" id="nav-logo">
-            <div className="p-1.5 bg-red-500/10 border border-red-500/20 text-red-500 rounded-lg shadow-inner backdrop-blur-sm shrink-0">
-              <GraduationCap size={16} className="stroke-[2.5]" />
-            </div>
-            {/* Full logo text for screens >= 640px (sm) */}
-            <div className="hidden sm:block">
-              <span className="text-sm md:text-base font-black tracking-tight text-white block leading-none">
-                Trainerpreneur<span className="text-red-500 font-black">.World</span>
-              </span>
-              <span className="text-[8px] font-extrabold text-zinc-500 tracking-wider uppercase block mt-0.5">
-                Trainer Directory & Programs
-              </span>
-            </div>
-            {/* Compact logo text for mobile view (< 640px) */}
-            <div className="sm:hidden block">
-              <span className="text-xs font-black tracking-tight text-white block leading-none">
-                TP<span className="text-red-500 font-black">.World</span>
-              </span>
-            </div>
+          <div className="flex items-center" id="nav-logo">
+            <img 
+              src="/images/LQ_Logo-06.png" 
+              alt="LQ Logo" 
+              className="h-9 sm:h-10 w-auto object-contain"
+            />
           </div>
           
           {/* Glass Action Buttons */}
