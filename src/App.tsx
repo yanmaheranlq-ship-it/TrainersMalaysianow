@@ -738,8 +738,8 @@ export default function App() {
           {/* Logo Section */}
           <div className="flex items-center" id="nav-logo">
             <img 
-              src="/images/Screenshot_2026-07-22_at_4.51.30_PM.png" 
-              alt="Logo" 
+              src="/images/LQ_Logo-06.png" 
+              alt="LQ Logo" 
               className="h-9 sm:h-10 w-auto object-contain"
             />
           </div>
