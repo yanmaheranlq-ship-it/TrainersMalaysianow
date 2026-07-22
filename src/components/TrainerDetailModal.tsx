@@ -822,11 +822,11 @@ export default function TrainerDetailModal({
                     <div className="w-full space-y-2 pt-4 border-t border-zinc-200">
                       <div className="flex items-center space-x-2 w-full py-2.5 px-3 rounded-lg bg-white text-zinc-400 text-xs font-semibold border border-zinc-200 shadow-sm select-none">
                         <Mail size={14} className="text-zinc-300 shrink-0" />
-                        <span className="truncate blur-sm pointer-events-none">{trainer.email || 'trainer@email.com'}</span>
+                        <span style={{ filter: 'blur(5px)', userSelect: 'none', pointerEvents: 'none' }} className="truncate">{trainer.email || 'trainer@email.com'}</span>
                       </div>
                       <div className="flex items-center space-x-2 w-full py-2.5 px-3 rounded-lg bg-white text-zinc-400 text-xs font-semibold border border-zinc-200 shadow-sm select-none">
                         <Phone size={14} className="text-zinc-300 shrink-0" />
-                        <span className="blur-sm pointer-events-none">{trainer.phone || '+60 12-345 6789'}</span>
+                        <span style={{ filter: 'blur(5px)', userSelect: 'none', pointerEvents: 'none' }}>{trainer.phone || '+60 12-345 6789'}</span>
                       </div>
                       {(() => {
                         const waMsg = encodeURIComponent(
