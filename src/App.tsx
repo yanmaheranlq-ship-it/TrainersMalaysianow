@@ -734,23 +734,23 @@ export default function App() {
         }`} 
         id="app-nav"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-2">
           {/* Logo Section */}
-          <div className="flex items-center gap-3" id="nav-logo">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 min-w-0" id="nav-logo">
             <img 
               src="/images/LQ_Logo-06.png" 
               alt="LQ Logo" 
-              className="h-9 sm:h-10 w-auto object-contain"
+              className="h-6 xs:h-7 sm:h-10 w-auto object-contain"
             />
             <img 
               src="/images/Screenshot_2026-07-22_at_4.59.50_PM.png" 
               alt="TrainerPreneur Logo" 
-              className="h-9 sm:h-10 w-auto object-contain"
+              className="h-6 xs:h-7 sm:h-10 w-auto object-contain"
             />
           </div>
           
           {/* Glass Action Buttons */}
-          <div className="flex items-center gap-2" id="nav-actions">
+          <div className="flex items-center gap-1 sm:gap-2" id="nav-actions">
             {currentUser ? (
               <>
                 {/* Active Session Indicator */}
