@@ -736,10 +736,15 @@ export default function App() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
           {/* Logo Section */}
-          <div className="flex items-center" id="nav-logo">
+          <div className="flex items-center gap-2" id="nav-logo">
             <img 
               src="/images/LQ_Logo-06.png" 
               alt="LQ Logo" 
+              className="h-9 sm:h-10 w-auto object-contain"
+            />
+            <img 
+              src="/images/Artboard_1_copy_2TP_Logo.png" 
+              alt="TP Logo" 
               className="h-9 sm:h-10 w-auto object-contain"
             />
           </div>
