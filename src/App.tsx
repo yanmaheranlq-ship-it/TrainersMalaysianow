@@ -743,8 +743,8 @@ export default function App() {
               className="h-9 sm:h-10 w-auto object-contain"
             />
             <img 
-              src="/images/Screenshot_2026-07-22_at_4.55.15_PM.png" 
-              alt="Partner Logo" 
+              src="/images/Screenshot_2026-07-22_at_4.59.50_PM.png" 
+              alt="TrainerPreneur Logo" 
               className="h-9 sm:h-10 w-auto object-contain"
             />
           </div>
