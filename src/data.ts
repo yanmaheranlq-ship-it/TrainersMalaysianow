@@ -27,7 +27,8 @@ export const INITIAL_TRAINERS: Trainer[] = [
     projectsCount: 18,
     socials: {
       linkedin: 'https://linkedin.com/in/fadhil-razak-osha',
-      twitter: 'https://twitter.com/fadhil_osha'
+      twitter: 'https://twitter.com/fadhil_osha',
+      facebook: 'https://www.facebook.com/share/1EhYu4XAnD/?mibextid=wwXIfr'
     }
   },
   {
@@ -56,7 +57,8 @@ export const INITIAL_TRAINERS: Trainer[] = [
     projectsCount: 22,
     socials: {
       linkedin: 'https://linkedin.com/in/sarah-cheng-cloud',
-      twitter: 'https://twitter.com/sarah_cloud_sec'
+      twitter: 'https://twitter.com/sarah_cloud_sec',
+      facebook: 'https://www.facebook.com/share/1GVPDvX5vg/?mibextid=wwXIfr'
     }
   },
   {
@@ -85,7 +87,8 @@ export const INITIAL_TRAINERS: Trainer[] = [
     projectsCount: 31,
     socials: {
       linkedin: 'https://linkedin.com/in/marcus-david-ananth',
-      twitter: 'https://twitter.com/marcus_eq_coach'
+      twitter: 'https://twitter.com/marcus_eq_coach',
+      facebook: 'https://www.facebook.com/share/g/18HY6vthsV/?mibextid=wwXIfr'
     }
   },
   {

@@ -22,6 +22,7 @@ export interface Trainer {
   socials?: {
     linkedin?: string;
     twitter?: string;
+    facebook?: string;
   };
   academicQualification?: string[];
   professionalQualification?: string[];

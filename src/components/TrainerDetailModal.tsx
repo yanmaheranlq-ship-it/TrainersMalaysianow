@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Award, Mail, Phone, Star, Briefcase, CheckCircle2, Clock, BookOpen, Linkedin, Twitter, QrCode, Copy, Check, Download, Trophy, Medal, Crown, Sparkles, Camera, Upload, Plus, Trash2, Edit3, Save, FileText, Image, Share2, Link2, MessageSquare, GraduationCap, Building2, Loader2 } from 'lucide-react';
+import { X, Award, Mail, Phone, Star, Briefcase, CheckCircle2, Clock, BookOpen, Linkedin, Twitter, Facebook, QrCode, Copy, Check, Download, Trophy, Medal, Crown, Sparkles, Camera, Upload, Plus, Trash2, Edit3, Save, FileText, Image, Share2, Link2, MessageSquare, GraduationCap, Building2, Loader2 } from 'lucide-react';
 import { Trainer, PortfolioItem, FeedbackItem } from '../types';
 import TrainerSalesAnalytics from './TrainerSalesAnalytics';
 import { HRDCorpBadges } from './HRDCorpBadges';
@@ -847,10 +847,10 @@ export default function TrainerDetailModal({
                 )}
 
                 {/* Social Media Profiles */}
-                {trainer.socials && (trainer.socials.linkedin || trainer.socials.twitter) && (
+                {trainer.socials && (trainer.socials.linkedin || trainer.socials.twitter || trainer.socials.facebook) && (
                   <div className="w-full pt-4 border-t border-zinc-200 mt-4">
                     <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2.5">Professional Social Profiles</p>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                       {trainer.socials.linkedin && (
                         <a
                           href={trainer.socials.linkedin}
@@ -875,6 +875,19 @@ export default function TrainerDetailModal({
                         >
                           <Twitter size={13} className="shrink-0 text-zinc-400 group-hover:text-zinc-900 transition-colors" />
                           <span>Twitter/X</span>
+                        </a>
+                      )}
+                      {trainer.socials.facebook && (
+                        <a
+                          href={trainer.socials.facebook}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-1.5 flex-1 py-2 px-2.5 rounded-lg bg-white hover:bg-blue-50 text-zinc-700 hover:text-blue-600 text-xs font-semibold border border-zinc-200 hover:border-blue-200 transition-all shadow-sm"
+                          id="social-facebook-link"
+                          title="Connect on Facebook"
+                        >
+                          <Facebook size={13} className="shrink-0 text-blue-600" />
+                          <span>Facebook</span>
                         </a>
                       )}
                     </div>
