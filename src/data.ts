@@ -28,7 +28,9 @@ export const INITIAL_TRAINERS: Trainer[] = [
     socials: {
       linkedin: 'https://linkedin.com/in/fadhil-razak-osha',
       twitter: 'https://twitter.com/fadhil_osha',
-      facebook: 'https://www.facebook.com/share/1EhYu4XAnD/?mibextid=wwXIfr'
+      facebook: 'https://www.facebook.com/share/1EhYu4XAnD/?mibextid=wwXIfr',
+      facebook2: 'https://www.facebook.com/share/1GVPDvX5vg/?mibextid=wwXIfr',
+      facebook3: 'https://www.facebook.com/share/g/18HY6vthsV/?mibextid=wwXIfr'
     }
   },
   {
@@ -58,7 +60,9 @@ export const INITIAL_TRAINERS: Trainer[] = [
     socials: {
       linkedin: 'https://linkedin.com/in/sarah-cheng-cloud',
       twitter: 'https://twitter.com/sarah_cloud_sec',
-      facebook: 'https://www.facebook.com/share/1GVPDvX5vg/?mibextid=wwXIfr'
+      facebook: 'https://www.facebook.com/share/1EhYu4XAnD/?mibextid=wwXIfr',
+      facebook2: 'https://www.facebook.com/share/1GVPDvX5vg/?mibextid=wwXIfr',
+      facebook3: 'https://www.facebook.com/share/g/18HY6vthsV/?mibextid=wwXIfr'
     }
   },
   {
@@ -88,7 +92,9 @@ export const INITIAL_TRAINERS: Trainer[] = [
     socials: {
       linkedin: 'https://linkedin.com/in/marcus-david-ananth',
       twitter: 'https://twitter.com/marcus_eq_coach',
-      facebook: 'https://www.facebook.com/share/g/18HY6vthsV/?mibextid=wwXIfr'
+      facebook: 'https://www.facebook.com/share/1EhYu4XAnD/?mibextid=wwXIfr',
+      facebook2: 'https://www.facebook.com/share/1GVPDvX5vg/?mibextid=wwXIfr',
+      facebook3: 'https://www.facebook.com/share/g/18HY6vthsV/?mibextid=wwXIfr'
     }
   },
   {
@@ -201,7 +207,7 @@ export const INITIAL_TRAINERS: Trainer[] = [
     phone: '+60 14-301 2233',
     featured: false,
     projectsCount: 19,
-    socials: { linkedin: 'https://linkedin.com/in/siti-aminah-service' }
+    socials: { linkedin: 'https://linkedin.com/in/siti-aminah-service', facebook: 'https://www.facebook.com/share/1EhYu4XAnD/?mibextid=wwXIfr', facebook2: 'https://www.facebook.com/share/1GVPDvX5vg/?mibextid=wwXIfr', facebook3: 'https://www.facebook.com/share/g/18HY6vthsV/?mibextid=wwXIfr' }
   },
   {
     id: 't8',
@@ -226,7 +232,7 @@ export const INITIAL_TRAINERS: Trainer[] = [
     phone: '+60 12-888 7766',
     featured: false,
     projectsCount: 34,
-    socials: { linkedin: 'https://linkedin.com/in/adrian-lim-web3' }
+    socials: { linkedin: 'https://linkedin.com/in/adrian-lim-web3', facebook: 'https://www.facebook.com/share/1EhYu4XAnD/?mibextid=wwXIfr', facebook2: 'https://www.facebook.com/share/1GVPDvX5vg/?mibextid=wwXIfr', facebook3: 'https://www.facebook.com/share/g/18HY6vthsV/?mibextid=wwXIfr' }
   },
   {
     id: 't9',
@@ -251,7 +257,7 @@ export const INITIAL_TRAINERS: Trainer[] = [
     phone: '+60 17-223 4455',
     featured: false,
     projectsCount: 15,
-    socials: { linkedin: 'https://linkedin.com/in/rajesh-kumar-hazmat' }
+    socials: { linkedin: 'https://linkedin.com/in/rajesh-kumar-hazmat', facebook: 'https://www.facebook.com/share/1EhYu4XAnD/?mibextid=wwXIfr', facebook2: 'https://www.facebook.com/share/1GVPDvX5vg/?mibextid=wwXIfr', facebook3: 'https://www.facebook.com/share/g/18HY6vthsV/?mibextid=wwXIfr' }
   },
   {
     id: 't10',
@@ -276,7 +282,7 @@ export const INITIAL_TRAINERS: Trainer[] = [
     phone: '+60 13-333 5544',
     featured: false,
     projectsCount: 20,
-    socials: { linkedin: 'https://linkedin.com/in/noraini-english-coach' }
+    socials: { linkedin: 'https://linkedin.com/in/noraini-english-coach', facebook: 'https://www.facebook.com/share/1EhYu4XAnD/?mibextid=wwXIfr', facebook2: 'https://www.facebook.com/share/1GVPDvX5vg/?mibextid=wwXIfr', facebook3: 'https://www.facebook.com/share/g/18HY6vthsV/?mibextid=wwXIfr' }
   },
   {
     id: 't11',
@@ -301,7 +307,7 @@ export const INITIAL_TRAINERS: Trainer[] = [
     phone: '+60 11-555 4432',
     featured: false,
     projectsCount: 28,
-    socials: { linkedin: 'https://linkedin.com/in/faizul-flutter-dev' }
+    socials: { linkedin: 'https://linkedin.com/in/faizul-flutter-dev', facebook: 'https://www.facebook.com/share/1EhYu4XAnD/?mibextid=wwXIfr', facebook2: 'https://www.facebook.com/share/1GVPDvX5vg/?mibextid=wwXIfr', facebook3: 'https://www.facebook.com/share/g/18HY6vthsV/?mibextid=wwXIfr' }
   },
   {
     id: 't12',
@@ -326,7 +332,7 @@ export const INITIAL_TRAINERS: Trainer[] = [
     phone: '+60 18-444 3322',
     featured: false,
     projectsCount: 24,
-    socials: { linkedin: 'https://linkedin.com/in/melissa-wong-growth' }
+    socials: { linkedin: 'https://linkedin.com/in/melissa-wong-growth', facebook: 'https://www.facebook.com/share/1EhYu4XAnD/?mibextid=wwXIfr', facebook2: 'https://www.facebook.com/share/1GVPDvX5vg/?mibextid=wwXIfr', facebook3: 'https://www.facebook.com/share/g/18HY6vthsV/?mibextid=wwXIfr' }
   },
   {
     id: 't13',
@@ -351,7 +357,7 @@ export const INITIAL_TRAINERS: Trainer[] = [
     phone: '+60 16-302 5588',
     featured: false,
     projectsCount: 29,
-    socials: { linkedin: 'https://linkedin.com/in/thinesh-devops-pro' }
+    socials: { linkedin: 'https://linkedin.com/in/thinesh-devops-pro', facebook: 'https://www.facebook.com/share/1EhYu4XAnD/?mibextid=wwXIfr', facebook2: 'https://www.facebook.com/share/1GVPDvX5vg/?mibextid=wwXIfr', facebook3: 'https://www.facebook.com/share/g/18HY6vthsV/?mibextid=wwXIfr' }
   },
   {
     id: 't14',
@@ -376,7 +382,7 @@ export const INITIAL_TRAINERS: Trainer[] = [
     phone: '+60 19-601 2288',
     featured: false,
     projectsCount: 16,
-    socials: { linkedin: 'https://linkedin.com/in/rozita-omar-safety' }
+    socials: { linkedin: 'https://linkedin.com/in/rozita-omar-safety', facebook: 'https://www.facebook.com/share/1EhYu4XAnD/?mibextid=wwXIfr', facebook2: 'https://www.facebook.com/share/1GVPDvX5vg/?mibextid=wwXIfr', facebook3: 'https://www.facebook.com/share/g/18HY6vthsV/?mibextid=wwXIfr' }
   },
   {
     id: 't15',
@@ -401,7 +407,7 @@ export const INITIAL_TRAINERS: Trainer[] = [
     phone: '+60 12-205 9933',
     featured: false,
     projectsCount: 42,
-    socials: { linkedin: 'https://linkedin.com/in/ir-roslan-kassim' }
+    socials: { linkedin: 'https://linkedin.com/in/ir-roslan-kassim', facebook: 'https://www.facebook.com/share/1EhYu4XAnD/?mibextid=wwXIfr', facebook2: 'https://www.facebook.com/share/1GVPDvX5vg/?mibextid=wwXIfr', facebook3: 'https://www.facebook.com/share/g/18HY6vthsV/?mibextid=wwXIfr' }
   },
   {
     id: 't16',
@@ -426,7 +432,7 @@ export const INITIAL_TRAINERS: Trainer[] = [
     phone: '+60 17-550 1199',
     featured: false,
     projectsCount: 27,
-    socials: { linkedin: 'https://linkedin.com/in/evelyn-tan-agile' }
+    socials: { linkedin: 'https://linkedin.com/in/evelyn-tan-agile', facebook: 'https://www.facebook.com/share/1EhYu4XAnD/?mibextid=wwXIfr', facebook2: 'https://www.facebook.com/share/1GVPDvX5vg/?mibextid=wwXIfr', facebook3: 'https://www.facebook.com/share/g/18HY6vthsV/?mibextid=wwXIfr' }
   },
   {
     id: 't17',
@@ -451,7 +457,7 @@ export const INITIAL_TRAINERS: Trainer[] = [
     phone: '+60 11-120 4455',
     featured: false,
     projectsCount: 18,
-    socials: { linkedin: 'https://linkedin.com/in/khairul-azhar-sql' }
+    socials: { linkedin: 'https://linkedin.com/in/khairul-azhar-sql', facebook: 'https://www.facebook.com/share/1EhYu4XAnD/?mibextid=wwXIfr', facebook2: 'https://www.facebook.com/share/1GVPDvX5vg/?mibextid=wwXIfr', facebook3: 'https://www.facebook.com/share/g/18HY6vthsV/?mibextid=wwXIfr' }
   },
   {
     id: 't18',
@@ -476,7 +482,7 @@ export const INITIAL_TRAINERS: Trainer[] = [
     phone: '+60 12-603 4455',
     featured: false,
     projectsCount: 30,
-    socials: { linkedin: 'https://linkedin.com/in/dr-sharmini-devi-dt' }
+    socials: { linkedin: 'https://linkedin.com/in/dr-sharmini-devi-dt', facebook: 'https://www.facebook.com/share/1EhYu4XAnD/?mibextid=wwXIfr', facebook2: 'https://www.facebook.com/share/1GVPDvX5vg/?mibextid=wwXIfr', facebook3: 'https://www.facebook.com/share/g/18HY6vthsV/?mibextid=wwXIfr' }
   },
   {
     id: 't19',
@@ -501,7 +507,7 @@ export const INITIAL_TRAINERS: Trainer[] = [
     phone: '+60 13-605 1199',
     featured: false,
     projectsCount: 17,
-    socials: { linkedin: 'https://linkedin.com/in/zulkifli-forklift-trainer' }
+    socials: { linkedin: 'https://linkedin.com/in/zulkifli-forklift-trainer', facebook: 'https://www.facebook.com/share/1EhYu4XAnD/?mibextid=wwXIfr', facebook2: 'https://www.facebook.com/share/1GVPDvX5vg/?mibextid=wwXIfr', facebook3: 'https://www.facebook.com/share/g/18HY6vthsV/?mibextid=wwXIfr' }
   },
   {
     id: 't20',

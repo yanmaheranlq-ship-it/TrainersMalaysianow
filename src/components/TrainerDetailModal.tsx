@@ -847,7 +847,7 @@ export default function TrainerDetailModal({
                 )}
 
                 {/* Social Media Profiles */}
-                {trainer.socials && (trainer.socials.linkedin || trainer.socials.twitter || trainer.socials.facebook) && (
+                {trainer.socials && (trainer.socials.linkedin || trainer.socials.twitter || trainer.socials.facebook || trainer.socials.facebook2 || trainer.socials.facebook3) && (
                   <div className="w-full pt-4 border-t border-zinc-200 mt-4">
                     <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2.5">Professional Social Profiles</p>
                     <div className="flex gap-2 flex-wrap">
@@ -884,6 +884,32 @@ export default function TrainerDetailModal({
                           rel="noopener noreferrer"
                           className="flex items-center justify-center gap-1.5 flex-1 py-2 px-2.5 rounded-lg bg-white hover:bg-blue-50 text-zinc-700 hover:text-blue-600 text-xs font-semibold border border-zinc-200 hover:border-blue-200 transition-all shadow-sm"
                           id="social-facebook-link"
+                          title="Connect on Facebook"
+                        >
+                          <Facebook size={13} className="shrink-0 text-blue-600" />
+                          <span>Facebook</span>
+                        </a>
+                      )}
+                      {trainer.socials.facebook2 && (
+                        <a
+                          href={trainer.socials.facebook2}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-1.5 flex-1 py-2 px-2.5 rounded-lg bg-white hover:bg-blue-50 text-zinc-700 hover:text-blue-600 text-xs font-semibold border border-zinc-200 hover:border-blue-200 transition-all shadow-sm"
+                          id="social-facebook2-link"
+                          title="Connect on Facebook"
+                        >
+                          <Facebook size={13} className="shrink-0 text-blue-600" />
+                          <span>Facebook</span>
+                        </a>
+                      )}
+                      {trainer.socials.facebook3 && (
+                        <a
+                          href={trainer.socials.facebook3}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center gap-1.5 flex-1 py-2 px-2.5 rounded-lg bg-white hover:bg-blue-50 text-zinc-700 hover:text-blue-600 text-xs font-semibold border border-zinc-200 hover:border-blue-200 transition-all shadow-sm"
+                          id="social-facebook3-link"
                           title="Connect on Facebook"
                         >
                           <Facebook size={13} className="shrink-0 text-blue-600" />

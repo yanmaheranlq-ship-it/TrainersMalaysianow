@@ -23,6 +23,8 @@ export interface Trainer {
     linkedin?: string;
     twitter?: string;
     facebook?: string;
+    facebook2?: string;
+    facebook3?: string;
   };
   academicQualification?: string[];
   professionalQualification?: string[];
