@@ -89,7 +89,7 @@ function StatCard({
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative bg-zinc-900/70 border border-zinc-800/80 rounded-2xl p-4 overflow-hidden group"
+      className="relative bg-zinc-900/70 border border-zinc-800/80 rounded-xl p-3 overflow-hidden group"
     >
       <div
         className="absolute -top-8 -right-8 w-24 h-24 rounded-full blur-2xl opacity-20 group-hover:opacity-30 transition-opacity"
@@ -264,9 +264,9 @@ export default function AdminDashboard({
             </div>
           </div>
 
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col lg:h-[calc(100vh-3.5rem)] lg:overflow-hidden">
             {/* Tabs */}
-            <div className="flex items-center gap-1.5 mb-6 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex items-center gap-1.5 mb-4 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden shrink-0">
               {TABS.map((t) => {
                 const Icon = t.icon;
                 const active = tab === t.id;
@@ -292,10 +292,10 @@ export default function AdminDashboard({
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="space-y-6"
+                className="flex flex-col lg:h-full lg:overflow-hidden gap-3"
               >
                 {/* Stat cards */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 shrink-0">
                   <StatCard label="Total Trainers" value={trainers.length} icon={Users} accent="#ef4444" />
                   <StatCard label="Total Programs" value={portfolios.length} icon={BookOpen} accent="#0ea5e9" />
                   <StatCard label="Registrations" value={registrations.length} icon={ClipboardList} accent="#f59e0b" />
@@ -303,92 +303,129 @@ export default function AdminDashboard({
                   <StatCard label="Avg Rating" value={stats.avgRating} icon={Award} accent="#8b5cf6" sub="across all trainers" />
                 </div>
 
-                {/* Charts grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* Main charts - 3 column grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-[1fr_1fr_280px] gap-2.5 flex-1 min-h-0">
                   {/* Participants by trainer */}
-                  <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-2xl p-5">
-                    <div className="flex items-center justify-between mb-4">
+                  <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-xl p-4 flex flex-col min-h-0">
+                    <div className="flex items-center justify-between mb-2 shrink-0">
                       <div>
-                        <h3 className="text-sm font-black text-white">Participants by Trainer</h3>
-                        <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Top 6 by enrollment</p>
+                        <h3 className="text-xs font-black text-white">Participants by Trainer</h3>
+                        <p className="text-[9px] text-zinc-500 uppercase tracking-wider font-bold">Top 6 by enrollment</p>
                       </div>
-                      <TrendingUp size={16} className="text-red-400" />
+                      <TrendingUp size={14} className="text-red-400" />
                     </div>
-                    <ResponsiveContainer width="100%" height={240}>
-                      <BarChart data={participantsByTrainer}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-                        <XAxis dataKey="name" stroke="#71717a" fontSize={11} tickLine={false} axisLine={false} />
-                        <YAxis stroke="#71717a" fontSize={11} tickLine={false} axisLine={false} />
-                        <Tooltip
-                          contentStyle={{
-                            background: '#18181b',
-                            border: '1px solid #3f3f46',
-                            borderRadius: 12,
-                            fontSize: 12,
-                          }}
-                          cursor={{ fill: '#ef444420' }}
-                        />
-                        <Bar dataKey="total" fill="#ef4444" radius={[6, 6, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
+                    <div className="flex-1 min-h-0">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={participantsByTrainer}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
+                          <XAxis dataKey="name" stroke="#71717a" fontSize={10} tickLine={false} axisLine={false} />
+                          <YAxis stroke="#71717a" fontSize={10} tickLine={false} axisLine={false} />
+                          <Tooltip
+                            contentStyle={{
+                              background: '#18181b',
+                              border: '1px solid #3f3f46',
+                              borderRadius: 12,
+                              fontSize: 11,
+                            }}
+                            cursor={{ fill: '#ef444420' }}
+                          />
+                          <Bar dataKey="total" fill="#ef4444" radius={[6, 6, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
                   </div>
 
                   {/* Category distribution */}
-                  <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-2xl p-5">
-                    <div className="flex items-center justify-between mb-4">
+                  <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-xl p-4 flex flex-col min-h-0">
+                    <div className="flex items-center justify-between mb-2 shrink-0">
                       <div>
-                        <h3 className="text-sm font-black text-white">Trainers by Category</h3>
-                        <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Distribution</p>
+                        <h3 className="text-xs font-black text-white">Trainers by Category</h3>
+                        <p className="text-[9px] text-zinc-500 uppercase tracking-wider font-bold">Distribution</p>
                       </div>
-                      <Sparkles size={16} className="text-red-400" />
+                      <Sparkles size={14} className="text-red-400" />
                     </div>
-                    <ResponsiveContainer width="100%" height={200}>
-                      <PieChart>
-                        <Pie
-                          data={categoryData}
-                          dataKey="value"
-                          nameKey="name"
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={45}
-                          outerRadius={75}
-                          paddingAngle={3}
-                        >
-                          {categoryData.map((entry, i) => (
-                            <Cell key={i} fill={entry.color} stroke="#0a0a0a" strokeWidth={2} />
-                          ))}
-                        </Pie>
-                        <Tooltip
-                          contentStyle={{
-                            background: '#18181b',
-                            border: '1px solid #3f3f46',
-                            borderRadius: 12,
-                            fontSize: 12,
-                          }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                    <div className="flex flex-wrap justify-center gap-x-3 gap-y-1.5 mt-3">
+                    <div className="flex-1 min-h-0">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={categoryData}
+                            dataKey="value"
+                            nameKey="name"
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={40}
+                            outerRadius={65}
+                            paddingAngle={3}
+                          >
+                            {categoryData.map((entry, i) => (
+                              <Cell key={i} fill={entry.color} stroke="#0a0a0a" strokeWidth={2} />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            contentStyle={{
+                              background: '#18181b',
+                              border: '1px solid #3f3f46',
+                              borderRadius: 12,
+                              fontSize: 11,
+                            }}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="flex flex-wrap justify-center gap-x-3 gap-y-1 mt-2 shrink-0">
                       {categoryData.map((entry, i) => (
                         <div key={i} className="flex items-center gap-1.5">
                           <span className="w-2 h-2 rounded-full shrink-0" style={{ background: entry.color }} />
-                          <span className="text-[10px] text-zinc-400">{entry.name} ({entry.value})</span>
+                          <span className="text-[9px] text-zinc-400">{entry.name} ({entry.value})</span>
                         </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Top trainers list */}
+                  <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-xl p-4 flex flex-col min-h-0">
+                    <h3 className="text-xs font-black text-white mb-2 shrink-0">Top Rated Trainers</h3>
+                    <div className="flex-1 overflow-y-auto space-y-1.5 min-h-0 [scrollbar-width:thin] [scrollbar-color:#3f3f46_transparent]">
+                      {topTrainers.map((t, i) => (
+                        <button
+                          key={t.id}
+                          onClick={() => {
+                            onSelectTrainer(t);
+                            onClose();
+                          }}
+                          className="w-full flex items-center gap-2.5 p-2 rounded-lg bg-zinc-950/50 hover:bg-zinc-900 border border-zinc-800/60 hover:border-red-500/30 transition-all cursor-pointer text-left"
+                        >
+                          <span className="text-[10px] font-black text-red-500 w-4 text-center">{i + 1}</span>
+                          <img
+                            src={t.avatar}
+                            alt={t.name}
+                            className="w-7 h-7 rounded-md object-cover border border-zinc-800"
+                            referrerPolicy="no-referrer"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-[11px] font-bold text-white truncate">{t.name}</p>
+                            <p className="text-[9px] text-zinc-500 truncate">{t.title}</p>
+                          </div>
+                          <div className="flex items-center gap-0.5 shrink-0">
+                            <Star size={10} className="fill-amber-500 text-amber-500" />
+                            <span className="text-[10px] font-black text-amber-400">{t.rating.toFixed(2)}</span>
+                          </div>
+                        </button>
                       ))}
                     </div>
                   </div>
                 </div>
 
-                {/* Registrations trend */}
-                <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-2xl p-5">
-                  <div className="flex items-center justify-between mb-4">
+                {/* Registrations trend - bottom row */}
+                <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-xl p-4 shrink-0 h-[160px]">
+                  <div className="flex items-center justify-between mb-2">
                     <div>
-                      <h3 className="text-sm font-black text-white">Registrations Trend</h3>
-                      <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">Last 7 days</p>
+                      <h3 className="text-xs font-black text-white">Registrations Trend</h3>
+                      <p className="text-[9px] text-zinc-500 uppercase tracking-wider font-bold">Last 7 days</p>
                     </div>
-                    <Calendar size={16} className="text-red-400" />
+                    <Calendar size={14} className="text-red-400" />
                   </div>
-                  <ResponsiveContainer width="100%" height={220}>
+                  <ResponsiveContainer width="100%" height={100}>
                     <AreaChart data={registrationsTrend}>
                       <defs>
                         <linearGradient id="regGrad" x1="0" y1="0" x2="0" y2="1">
@@ -397,58 +434,25 @@ export default function AdminDashboard({
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-                      <XAxis dataKey="label" stroke="#71717a" fontSize={11} tickLine={false} axisLine={false} />
-                      <YAxis stroke="#71717a" fontSize={11} tickLine={false} axisLine={false} allowDecimals={false} />
+                      <XAxis dataKey="label" stroke="#71717a" fontSize={10} tickLine={false} axisLine={false} />
+                      <YAxis stroke="#71717a" fontSize={10} tickLine={false} axisLine={false} allowDecimals={false} />
                       <Tooltip
                         contentStyle={{
                           background: '#18181b',
                           border: '1px solid #3f3f46',
                           borderRadius: 12,
-                          fontSize: 12,
+                          fontSize: 11,
                         }}
                       />
                       <Area
                         type="monotone"
                         dataKey="count"
                         stroke="#ef4444"
-                        strokeWidth={2.5}
+                        strokeWidth={2}
                         fill="url(#regGrad)"
                       />
                     </AreaChart>
                   </ResponsiveContainer>
-                </div>
-
-                {/* Top trainers list */}
-                <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-2xl p-5">
-                  <h3 className="text-sm font-black text-white mb-4">Top Rated Trainers</h3>
-                  <div className="space-y-2">
-                    {topTrainers.map((t, i) => (
-                      <button
-                        key={t.id}
-                        onClick={() => {
-                          onSelectTrainer(t);
-                          onClose();
-                        }}
-                        className="w-full flex items-center gap-3 p-2.5 rounded-xl bg-zinc-950/50 hover:bg-zinc-900 border border-zinc-800/60 hover:border-red-500/30 transition-all cursor-pointer text-left"
-                      >
-                        <span className="text-xs font-black text-red-500 w-5 text-center">{i + 1}</span>
-                        <img
-                          src={t.avatar}
-                          alt={t.name}
-                          className="w-9 h-9 rounded-lg object-cover border border-zinc-800"
-                          referrerPolicy="no-referrer"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold text-white truncate">{t.name}</p>
-                          <p className="text-[10px] text-zinc-500 truncate">{t.title}</p>
-                        </div>
-                        <div className="flex items-center gap-1 shrink-0">
-                          <Star size={12} className="fill-amber-500 text-amber-500" />
-                          <span className="text-xs font-black text-amber-400">{t.rating.toFixed(2)}</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
                 </div>
               </motion.div>
             )}
@@ -458,7 +462,7 @@ export default function AdminDashboard({
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="space-y-4"
+                className="space-y-4 lg:flex-1 lg:overflow-y-auto lg:[scrollbar-width:thin] lg:[scrollbar-color:#3f3f46_transparent]"
               >
                 <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
                   <div className="relative w-full sm:max-w-xs">
@@ -676,7 +680,7 @@ export default function AdminDashboard({
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="space-y-4"
+                className="space-y-4 lg:flex-1 lg:overflow-y-auto lg:[scrollbar-width:thin] lg:[scrollbar-color:#3f3f46_transparent]"
               >
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <StatCard label="Total" value={registrations.length} icon={ClipboardList} accent="#f59e0b" />
@@ -767,7 +771,7 @@ export default function AdminDashboard({
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="space-y-4"
+                className="space-y-4 lg:flex-1 lg:overflow-y-auto lg:[scrollbar-width:thin] lg:[scrollbar-color:#3f3f46_transparent]"
               >
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <StatCard label="Total Feedbacks" value={feedbacks.length} icon={MessageSquare} accent="#10b981" />
