@@ -12,9 +12,10 @@ interface LoginModalProps {
 
 export default function LoginModal({ isOpen, onClose, onLoginSuccess, trainers = [] }: LoginModalProps) {
   const [loginType, setLoginType] = useState<'admin' | 'trainer'>('admin');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState(() => localStorage.getItem('lq_remember_email') || '');
+  const [password, setPassword] = useState(() => localStorage.getItem('lq_remember_pw') || '');
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(() => !!localStorage.getItem('lq_remember_email'));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -30,6 +31,16 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, trainers =
         setError('Please enter a valid email address.');
         setIsSubmitting(false);
         return;
+      }
+
+      if (rememberMe) {
+        localStorage.setItem('lq_remember_email', email);
+        localStorage.setItem('lq_remember_pw', password);
+        localStorage.setItem('lq_remember_type', loginType);
+      } else {
+        localStorage.removeItem('lq_remember_email');
+        localStorage.removeItem('lq_remember_pw');
+        localStorage.removeItem('lq_remember_type');
       }
 
       if (loginType === 'admin') {
@@ -256,6 +267,19 @@ export default function LoginModal({ isOpen, onClose, onLoginSuccess, trainers =
                     </button>
                   </div>
                 </div>
+
+                {/* Remember Me */}
+                <label className="flex items-center gap-2.5 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="w-3.5 h-3.5 rounded border-zinc-700 bg-zinc-950 text-red-600 focus:ring-red-500/30 accent-red-600 cursor-pointer"
+                  />
+                  <span className="text-[11px] text-zinc-400 group-hover:text-zinc-300 transition-colors font-medium">
+                    Ingat saya di peranti ini
+                  </span>
+                </label>
 
                 {/* Submit Button */}
                 <button
