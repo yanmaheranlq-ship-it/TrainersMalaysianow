@@ -141,6 +141,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd }: AddTrainerMo
   // Tab state
   const [activeTab, setActiveTab] = useState<1 | 2>(1);
   const [errors, setErrors] = useState<string[]>([]);
+  const [agreedTnC, setAgreedTnC] = useState(false);
 
   useEffect(() => {
     if (!isOpen) {
@@ -201,6 +202,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd }: AddTrainerMo
     if (!password.trim()) errList.push('Kata laluan portal diperlukan untuk log masuk.');
     if (!icNumber.trim()) errList.push('No. Kad Pengenalan (IC) diperlukan.');
     if (!tttCertNo.trim()) errList.push('No. Sijil TTT / Sijil Pengecualian diperlukan.');
+    if (!agreedTnC) errList.push('Anda perlu bersetuju dengan Terma & Syarat untuk meneruskan.');
 
     if (activeTab === 2) {
       if (!courseTitle.trim()) errList.push('Tajuk kursus diperlukan.');
@@ -286,7 +288,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd }: AddTrainerMo
     setCourseTitle(''); setCourseLevel('Asas'); setCourseDescription('');
     setCourseDuration('2 Hari (16 Jam)'); setCourseOutcomes(['']);
     setAvatarFile(null); setAvatarPreview(''); setUploadError('');
-    setActiveTab(1); setErrors([]);
+    setActiveTab(1); setErrors([]); setAgreedTnC(false);
     onClose();
   };
 
@@ -574,6 +576,34 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd }: AddTrainerMo
                     values={trainingTopics}
                     onChange={setTrainingTopics}
                   />
+                </div>
+
+                {/* Terms & Conditions */}
+                <div className={`mt-4 p-4 rounded-xl border transition-colors ${
+                  agreedTnC ? 'bg-green-50 border-green-200' : 'bg-zinc-50 border-zinc-200'
+                }`}>
+                  <div className="mb-3">
+                    <h4 className="text-xs font-bold text-zinc-800 mb-1.5">Terma & Syarat Pendaftaran Trainer</h4>
+                    <div className="text-[11px] text-zinc-600 leading-relaxed space-y-1.5 max-h-28 overflow-y-auto pr-2 [scrollbar-width:thin] [scrollbar-color:#d4d4d8_transparent]">
+                      <p>1. Saya mengesahkan bahawa semua maklumat yang diberikan adalah benar dan tepat. Sebarang maklumat palsu boleh menyebabkan pembatalan pendaftaran.</p>
+                      <p>2. Saya bersetuju untuk mematuhi semua garis panduan dan polisi yang ditetapkan oleh LQ Training Centre dan HRD Corp berkaitan pengendalian program latihan.</p>
+                      <p>3. Saya memahami bahawa pihak LQ Training Centre berhak untuk menolak atau membatalkan pendaftaran saya jika didapati melanggar mana-mana syarat yang dinyatakan.</p>
+                      <p>4. Saya memberi kebenaran kepada LQ Training Centre untuk menggunakan maklumat profil saya bagi tujuan pemasaran program latihan yang berkaitan.</p>
+                      <p>5. Saya memahami bahawa bayaran komisen dan terma kerjasama akan tertakluk kepada perjanjian berasingan yang akan ditandatangani selepas kelulusan pendaftaran.</p>
+                    </div>
+                  </div>
+                  <label className="flex items-start gap-2.5 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={agreedTnC}
+                      onChange={(e) => setAgreedTnC(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 rounded border-zinc-300 text-red-600 focus:ring-red-500 accent-red-600 cursor-pointer shrink-0"
+                    />
+                    <span className="text-xs text-zinc-700 leading-relaxed group-hover:text-zinc-900 transition-colors">
+                      Saya telah membaca dan <strong className="text-red-600">bersetuju dengan Terma & Syarat</strong> pendaftaran trainer di atas.
+                      <span className="text-rose-500 ml-0.5">*</span>
+                    </span>
+                  </label>
                 </div>
               </div>
             )}
