@@ -738,7 +738,7 @@ export default function App() {
           {/* Logo Section */}
           <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 min-w-0" id="nav-logo">
             <img 
-              src="/images/LQ_Logo-06.png" 
+              src="/images/Screenshot_2026-07-24_at_10.58.31_AM.png" 
               alt="LQ Logo" 
               className="h-6 xs:h-7 sm:h-10 w-auto object-contain"
             />
