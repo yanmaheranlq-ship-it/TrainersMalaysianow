@@ -310,6 +310,18 @@ export default function App() {
     }
   }, [trainers]);
 
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('plan') === 'special') {
+        setIsSpecialPlan(true);
+        setIsAddModalOpen(true);
+      }
+    } catch (e) {
+      console.warn("Failed to read plan param:", e);
+    }
+  }, []);
+
   // Synchronize selectedTrainer and urlAction to URL search parameters
   useEffect(() => {
     try {
@@ -334,6 +346,7 @@ export default function App() {
     }
   }, [selectedTrainer, urlAction]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isSpecialPlan, setIsSpecialPlan] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isAdminDashboardOpen, setIsAdminDashboardOpen] = useState(false);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
@@ -996,7 +1009,8 @@ export default function App() {
       {/* Interactive Registration / Addition Modal */}
       <AddTrainerModal
         isOpen={isAddModalOpen}
-        onClose={() => setIsAddModalOpen(false)}
+        onClose={() => { setIsAddModalOpen(false); setIsSpecialPlan(false); }}
+        specialPlan={isSpecialPlan}
         onAdd={(newTrainer, newPortfolio) => {
           handleAddTrainer(newTrainer, newPortfolio);
           setIsAddModalOpen(false);

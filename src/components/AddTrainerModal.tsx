@@ -72,6 +72,7 @@ interface AddTrainerModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (trainer: Trainer, portfolio: PortfolioItem) => void;
+  specialPlan?: boolean;
 }
 
 const CATEGORY_OPTIONS: { value: CategoryType; label: string; desc: string }[] = [
@@ -104,7 +105,7 @@ const COURSE_IMAGE_PRESETS = {
   soft_skills: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&q=80&w=600'
 };
 
-export default function AddTrainerModal({ isOpen, onClose, onAdd }: AddTrainerModalProps) {
+export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = false }: AddTrainerModalProps) {
   // Form fields: Trainer
   const [name, setName] = useState('');
   const [title, setTitle] = useState('');
@@ -143,6 +144,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd }: AddTrainerMo
   const [errors, setErrors] = useState<string[]>([]);
   const [agreedTnC, setAgreedTnC] = useState(false);
   const [subscriptionAgreed, setSubscriptionAgreed] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<'standard' | 'special'>('standard');
 
   useEffect(() => {
     if (!isOpen) {
@@ -262,7 +264,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd }: AddTrainerMo
       previousCompanies: finalCompanies,
       trainingTopics: finalTrainingTopics,
       subscriptionStatus: 'pending' as const,
-      subscriptionPlan: 'Pelan Trainer RM19.90/bulan',
+      subscriptionPlan: selectedPlan === 'special' ? 'Pelan Khas (1 Bulan Percuma + RM19.90/bulan)' : 'Pelan Trainer RM19.90/bulan',
       subscribedAt: new Date().toISOString(),
     };
 
@@ -292,7 +294,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd }: AddTrainerMo
     setCourseTitle(''); setCourseLevel('Asas'); setCourseDescription('');
     setCourseDuration('2 Hari (16 Jam)'); setCourseOutcomes(['']);
     setAvatarFile(null); setAvatarPreview(''); setUploadError('');
-    setActiveTab(0); setErrors([]); setAgreedTnC(false); setSubscriptionAgreed(false);
+    setActiveTab(0); setErrors([]); setAgreedTnC(false); setSubscriptionAgreed(false); setSelectedPlan('standard');
     onClose();
   };
 
@@ -405,71 +407,106 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd }: AddTrainerMo
                   </p>
                 </div>
 
-                <div className={`relative border-2 rounded-2xl p-5 transition-all cursor-pointer ${
-                  subscriptionAgreed
-                    ? 'border-teal-500 bg-teal-50/50 shadow-lg shadow-teal-100'
-                    : 'border-zinc-200 bg-white hover:border-zinc-300 hover:shadow-md'
-                }`}
-                onClick={() => setSubscriptionAgreed(!subscriptionAgreed)}
-                >
-                  {subscriptionAgreed && (
-                    <div className="absolute -top-2.5 -right-2.5 w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center shadow-md">
-                      <Check size={14} className="text-white" />
+                <div className={`grid gap-3 ${specialPlan ? 'sm:grid-cols-2' : ''}`}>
+                  {/* Standard Plan */}
+                  <div className={`relative border-2 rounded-2xl p-5 transition-all cursor-pointer ${
+                    selectedPlan === 'standard' && subscriptionAgreed
+                      ? 'border-teal-500 bg-teal-50/50 shadow-lg shadow-teal-100'
+                      : selectedPlan === 'standard'
+                        ? 'border-teal-300 bg-teal-50/30'
+                        : 'border-zinc-200 bg-white hover:border-zinc-300 hover:shadow-md'
+                  }`}
+                  onClick={() => { setSelectedPlan('standard'); setSubscriptionAgreed(false); }}
+                  >
+                    {selectedPlan === 'standard' && subscriptionAgreed && (
+                      <div className="absolute -top-2.5 -right-2.5 w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center shadow-md">
+                        <Check size={14} className="text-white" />
+                      </div>
+                    )}
+
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Sparkles size={16} className="text-amber-500" />
+                          <span className="text-sm font-bold text-zinc-900">Pelan Trainer</span>
+                        </div>
+                        <p className="text-xs text-zinc-500">Akses penuh ke platform</p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-extrabold text-zinc-900">RM19<span className="text-base">.90</span></div>
+                        <span className="text-xs text-zinc-400 font-medium">/bulan</span>
+                      </div>
+                    </div>
+
+                    <div className="border-t border-zinc-100 pt-3 space-y-2">
+                      {['Profil trainer tersenarai di direktori utama', 'Paparkan kursus & program latihan anda', 'Terima pendaftaran peserta secara online', 'Dashboard analitik & laporan maklum balas', 'Sijil HRD Corp Claimable dipaparkan', 'QR code untuk feedback peserta'].map((item, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <div className="w-4.5 h-4.5 rounded-full bg-teal-100 flex items-center justify-center shrink-0">
+                            <Check size={9} className="text-teal-600" />
+                          </div>
+                          <span className="text-xs text-zinc-700">{item}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Special Plan - only when accessed via special link */}
+                  {specialPlan && (
+                    <div className={`relative border-2 rounded-2xl p-5 transition-all cursor-pointer ${
+                      selectedPlan === 'special' && subscriptionAgreed
+                        ? 'border-amber-500 bg-amber-50/50 shadow-lg shadow-amber-100'
+                        : selectedPlan === 'special'
+                          ? 'border-amber-300 bg-amber-50/30'
+                          : 'border-zinc-200 bg-white hover:border-zinc-300 hover:shadow-md'
+                    }`}
+                    onClick={() => { setSelectedPlan('special'); setSubscriptionAgreed(false); }}
+                    >
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold rounded-full shadow-md uppercase tracking-wider">
+                        Tawaran Khas
+                      </div>
+
+                      {selectedPlan === 'special' && subscriptionAgreed && (
+                        <div className="absolute -top-2.5 -right-2.5 w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center shadow-md">
+                          <Check size={14} className="text-white" />
+                        </div>
+                      )}
+
+                      <div className="flex items-start justify-between mb-4 mt-1">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <Crown size={16} className="text-amber-500" />
+                            <span className="text-sm font-bold text-zinc-900">Pelan Khas</span>
+                          </div>
+                          <p className="text-xs text-zinc-500">Akses penuh + 1 bulan PERCUMA</p>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-2xl font-extrabold text-zinc-900">RM19<span className="text-base">.90</span></div>
+                          <span className="text-xs text-zinc-400 font-medium">/bulan</span>
+                        </div>
+                      </div>
+
+                      <div className="bg-gradient-to-r from-amber-100 to-orange-100 rounded-lg px-3 py-2 mb-3 border border-amber-200">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shrink-0">
+                            <Sparkles size={12} className="text-white" />
+                          </div>
+                          <span className="text-xs font-bold text-amber-900">1 Bulan Pertama PERCUMA!</span>
+                        </div>
+                        <p className="text-[10px] text-amber-700 mt-1 ml-8">Bayaran bermula bulan ke-2 sahaja</p>
+                      </div>
+
+                      <div className="border-t border-zinc-100 pt-3 space-y-2">
+                        {['Semua manfaat Pelan Trainer', '1 bulan pertama percuma', 'Paparkan kursus & program latihan', 'Dashboard analitik & maklum balas', 'Sijil HRD Corp Claimable dipaparkan', 'QR code untuk feedback peserta'].map((item, i) => (
+                          <div key={i} className="flex items-center gap-2">
+                            <div className={`w-4.5 h-4.5 rounded-full flex items-center justify-center shrink-0 ${i === 1 ? 'bg-amber-100' : 'bg-teal-100'}`}>
+                              <Check size={9} className={i === 1 ? 'text-amber-600' : 'text-teal-600'} />
+                            </div>
+                            <span className={`text-xs ${i === 1 ? 'text-amber-800 font-bold' : 'text-zinc-700'}`}>{item}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
-
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <Sparkles size={16} className="text-amber-500" />
-                        <span className="text-sm font-bold text-zinc-900">Pelan Trainer</span>
-                      </div>
-                      <p className="text-xs text-zinc-500">Akses penuh ke platform Trainerpreneur</p>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-extrabold text-zinc-900">RM19<span className="text-base">.90</span></div>
-                      <span className="text-xs text-zinc-400 font-medium">/bulan</span>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-zinc-100 pt-3 space-y-2.5">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center shrink-0">
-                        <Check size={10} className="text-teal-600" />
-                      </div>
-                      <span className="text-xs text-zinc-700">Profil trainer tersenarai di direktori utama</span>
-                    </div>
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center shrink-0">
-                        <Check size={10} className="text-teal-600" />
-                      </div>
-                      <span className="text-xs text-zinc-700">Paparkan kursus & program latihan anda</span>
-                    </div>
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center shrink-0">
-                        <Check size={10} className="text-teal-600" />
-                      </div>
-                      <span className="text-xs text-zinc-700">Terima pendaftaran peserta secara online</span>
-                    </div>
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center shrink-0">
-                        <Check size={10} className="text-teal-600" />
-                      </div>
-                      <span className="text-xs text-zinc-700">Dashboard analitik & laporan maklum balas</span>
-                    </div>
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center shrink-0">
-                        <Check size={10} className="text-teal-600" />
-                      </div>
-                      <span className="text-xs text-zinc-700">Sijil HRD Corp Claimable dipaparkan</span>
-                    </div>
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center shrink-0">
-                        <Check size={10} className="text-teal-600" />
-                      </div>
-                      <span className="text-xs text-zinc-700">QR code untuk feedback peserta</span>
-                    </div>
-                  </div>
                 </div>
 
                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 space-y-2">
@@ -477,7 +514,10 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd }: AddTrainerMo
                     <Info size={14} className="text-amber-600 shrink-0 mt-0.5" />
                     <div className="text-xs text-amber-800 space-y-1">
                       <p className="font-bold">Cara Pembayaran:</p>
-                      <p>Selepas pendaftaran selesai, pihak kami akan menghubungi anda melalui emel/telefon untuk proses pembayaran langganan RM19.90/bulan.</p>
+                      <p>
+                        Selepas pendaftaran selesai, pihak kami akan menghubungi anda melalui emel/telefon untuk proses pembayaran langganan RM19.90/bulan.
+                        {selectedPlan === 'special' && ' Bulan pertama adalah PERCUMA — bayaran bermula bulan ke-2.'}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -490,7 +530,10 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd }: AddTrainerMo
                     className="mt-0.5 w-4 h-4 rounded border-zinc-300 text-teal-600 focus:ring-teal-500 cursor-pointer"
                   />
                   <span className="text-xs text-zinc-600 group-hover:text-zinc-800 transition-colors">
-                    Saya bersetuju untuk melanggan pelan Trainer pada kadar <strong className="text-zinc-900">RM19.90/bulan</strong> dan memahami bahawa pembayaran akan diproses selepas pendaftaran.
+                    {selectedPlan === 'special'
+                      ? <>Saya bersetuju untuk melanggan <strong className="text-zinc-900">Pelan Khas</strong> dengan 1 bulan percuma dan kadar <strong className="text-zinc-900">RM19.90/bulan</strong> bermula bulan ke-2.</>
+                      : <>Saya bersetuju untuk melanggan pelan Trainer pada kadar <strong className="text-zinc-900">RM19.90/bulan</strong> dan memahami bahawa pembayaran akan diproses selepas pendaftaran.</>
+                    }
                   </span>
                 </label>
               </div>
