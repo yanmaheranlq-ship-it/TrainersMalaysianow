@@ -21,6 +21,10 @@ import {
   AlertCircle,
   MessageSquare,
   XCircle,
+  Link,
+  Copy,
+  Crown,
+  Info,
 } from 'lucide-react';
 import {
   BarChart,
@@ -123,6 +127,7 @@ export default function AdminDashboard({
   onApproveRegistration,
 }: AdminDashboardProps) {
   const [tab, setTab] = useState<TabId>('overview');
+  const [specialLinkCopied, setSpecialLinkCopied] = useState(false);
   const [search, setSearch] = useState('');
   const [sortKey, setSortKey] = useState<'rating' | 'projects' | 'name'>('rating');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
@@ -453,6 +458,53 @@ export default function AdminDashboard({
                       />
                     </AreaChart>
                   </ResponsiveContainer>
+                </div>
+
+                {/* Special Plan Link Section */}
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border border-amber-200 p-5 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-md">
+                      <Crown size={20} className="text-white" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-zinc-900">Link Pelan Khas (Special Plan)</h4>
+                      <p className="text-xs text-zinc-500">Kongsi link ini kepada trainer untuk pendaftaran dengan 1 bulan percuma</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 bg-white rounded-xl border border-amber-200 px-4 py-3 flex items-center gap-2 overflow-hidden">
+                      <Link size={14} className="text-amber-500 shrink-0" />
+                      <span className="text-xs text-zinc-700 font-mono truncate select-all">
+                        {`${window.location.origin}${window.location.pathname}?plan=special`}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const url = `${window.location.origin}${window.location.pathname}?plan=special`;
+                        navigator.clipboard.writeText(url).then(() => {
+                          setSpecialLinkCopied(true);
+                          setTimeout(() => setSpecialLinkCopied(false), 2000);
+                        });
+                      }}
+                      className={`shrink-0 px-4 py-3 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all duration-300 cursor-pointer ${
+                        specialLinkCopied
+                          ? 'bg-teal-500 text-white shadow-md'
+                          : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 shadow-md hover:shadow-lg'
+                      }`}
+                    >
+                      <Copy size={14} />
+                      {specialLinkCopied ? 'Disalin!' : 'Salin Link'}
+                    </button>
+                  </div>
+
+                  <div className="flex items-start gap-2 bg-white/60 rounded-lg px-3 py-2.5 border border-amber-100">
+                    <Info size={13} className="text-amber-600 shrink-0 mt-0.5" />
+                    <p className="text-[11px] text-amber-800 leading-relaxed">
+                      Trainer yang membuka link ini akan melihat pilihan <strong>Pelan Khas</strong> dengan tawaran 1 bulan percuma (RM19.90/bulan bermula bulan ke-2). Link ini boleh dikongsi berkali-kali.
+                    </p>
+                  </div>
                 </div>
               </motion.div>
             )}
