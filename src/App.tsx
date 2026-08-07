@@ -54,6 +54,7 @@ type TrainerRow = {
   featured: boolean; projects_count: number; socials: any;
   academic_qualification: string[] | null; professional_qualification: string[] | null;
   previous_companies: string[] | null; training_topics: string[] | null;
+  subscription_status: string | null; subscription_plan: string | null; subscribed_at: string | null;
   created_at: string;
 };
 const mapTrainer = (r: TrainerRow): Trainer => ({
@@ -70,6 +71,9 @@ const mapTrainer = (r: TrainerRow): Trainer => ({
   professionalQualification: r.professional_qualification || undefined,
   previousCompanies: r.previous_companies || undefined,
   trainingTopics: r.training_topics || undefined,
+  subscriptionStatus: (r.subscription_status as Trainer['subscriptionStatus']) || 'pending',
+  subscriptionPlan: r.subscription_plan || undefined,
+  subscribedAt: r.subscribed_at || undefined,
 });
 const trainerToRow = (t: Trainer) => ({
   id: t.id, name: t.name, title: t.title, category: t.category,
@@ -84,6 +88,9 @@ const trainerToRow = (t: Trainer) => ({
   professional_qualification: t.professionalQualification || null,
   previous_companies: t.previousCompanies || null,
   training_topics: t.trainingTopics || null,
+  subscription_status: t.subscriptionStatus || 'pending',
+  subscription_plan: t.subscriptionPlan || null,
+  subscribed_at: t.subscribedAt || null,
 });
 
 type PortfolioRow = {

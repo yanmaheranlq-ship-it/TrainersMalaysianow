@@ -30,6 +30,9 @@ export interface Trainer {
   professionalQualification?: string[];
   previousCompanies?: string[];
   trainingTopics?: string[];
+  subscriptionStatus?: 'pending' | 'active' | 'expired';
+  subscriptionPlan?: string;
+  subscribedAt?: string;
 }
 
 export interface PortfolioItem {

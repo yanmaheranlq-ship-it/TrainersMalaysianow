@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, UserPlus, Info, BookOpen, User, Briefcase, Mail, Phone, Award, ShieldAlert, BadgePlus, Eye, EyeOff, Upload, Image as ImageIcon, Trash2, IdCard, FileCheck, Plus, GripVertical } from 'lucide-react';
+import { X, UserPlus, Info, BookOpen, User, Briefcase, Mail, Phone, Award, ShieldAlert, BadgePlus, Eye, EyeOff, Upload, Image as ImageIcon, Trash2, IdCard, FileCheck, Plus, GripVertical, CreditCard, Check, Crown, Sparkles } from 'lucide-react';
 import { Trainer, PortfolioItem, CategoryType } from '../types';
 import { supabase } from '../lib/supabase';
 
@@ -139,9 +139,10 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd }: AddTrainerMo
   const [courseOutcomes, setCourseOutcomes] = useState<string[]>(['']);
 
   // Tab state
-  const [activeTab, setActiveTab] = useState<1 | 2>(1);
+  const [activeTab, setActiveTab] = useState<0 | 1 | 2>(0);
   const [errors, setErrors] = useState<string[]>([]);
   const [agreedTnC, setAgreedTnC] = useState(false);
+  const [subscriptionAgreed, setSubscriptionAgreed] = useState(false);
 
   useEffect(() => {
     if (!isOpen) {
@@ -259,7 +260,10 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd }: AddTrainerMo
       academicQualification: finalAcademic,
       professionalQualification: finalProfessional,
       previousCompanies: finalCompanies,
-      trainingTopics: finalTrainingTopics
+      trainingTopics: finalTrainingTopics,
+      subscriptionStatus: 'pending' as const,
+      subscriptionPlan: 'Pelan Trainer RM19.90/bulan',
+      subscribedAt: new Date().toISOString(),
     };
 
     const newPortfolio: PortfolioItem = {
@@ -288,7 +292,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd }: AddTrainerMo
     setCourseTitle(''); setCourseLevel('Asas'); setCourseDescription('');
     setCourseDuration('2 Hari (16 Jam)'); setCourseOutcomes(['']);
     setAvatarFile(null); setAvatarPreview(''); setUploadError('');
-    setActiveTab(1); setErrors([]); setAgreedTnC(false);
+    setActiveTab(0); setErrors([]); setAgreedTnC(false); setSubscriptionAgreed(false);
     onClose();
   };
 
@@ -332,30 +336,44 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd }: AddTrainerMo
           <div className="flex border-b border-zinc-200 bg-zinc-50/50">
             <button
               type="button"
-              onClick={() => setActiveTab(1)}
+              onClick={() => setActiveTab(0)}
+              className={`flex-1 py-2.5 sm:py-3.5 text-center text-xs sm:text-sm font-bold border-b-2 flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                activeTab === 0
+                  ? 'border-red-600 text-red-600 bg-white font-extrabold'
+                  : 'border-transparent text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100/50'
+              }`}
+            >
+              <CreditCard size={14} className="sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">1. Langganan</span>
+              <span className="sm:hidden">1. Langganan</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => { if (subscriptionAgreed) setActiveTab(1); }}
               className={`flex-1 py-2.5 sm:py-3.5 text-center text-xs sm:text-sm font-bold border-b-2 flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
                 activeTab === 1
                   ? 'border-red-600 text-red-600 bg-white font-extrabold'
                   : 'border-transparent text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100/50'
               }`}
+              disabled={!subscriptionAgreed}
             >
               <User size={14} className="sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">1. Profil Trainer</span>
-              <span className="sm:hidden">1. Profil</span>
+              <span className="hidden sm:inline">2. Profil Trainer</span>
+              <span className="sm:hidden">2. Profil</span>
             </button>
             <button
               type="button"
-              onClick={() => { if (validate()) setActiveTab(2); }}
+              onClick={() => { if (subscriptionAgreed && validate()) setActiveTab(2); }}
               className={`flex-1 py-2.5 sm:py-3.5 text-center text-xs sm:text-sm font-bold border-b-2 flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
                 activeTab === 2
                   ? 'border-red-600 text-red-600 bg-white font-extrabold'
                   : 'border-transparent text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100/50'
               }`}
-              disabled={!name.trim() || !title.trim()}
+              disabled={!subscriptionAgreed || !name.trim() || !title.trim()}
             >
               <BookOpen size={14} className="sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">2. Program Kursus Pertama</span>
-              <span className="sm:hidden">2. Kursus</span>
+              <span className="hidden sm:inline">3. Program Kursus</span>
+              <span className="sm:hidden">3. Kursus</span>
             </button>
           </div>
 
@@ -371,6 +389,110 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd }: AddTrainerMo
                     {errors.map((err, idx) => (<li key={idx}>{err}</li>))}
                   </ul>
                 </div>
+              </div>
+            )}
+
+            {/* TAB 0: SUBSCRIPTION */}
+            {activeTab === 0 && (
+              <div className="space-y-5">
+                <div className="text-center space-y-2">
+                  <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 shadow-lg">
+                    <Crown size={28} className="text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold text-zinc-900">Langganan Trainer</h3>
+                  <p className="text-xs text-zinc-500 max-w-sm mx-auto">
+                    Untuk mendaftar sebagai trainer di platform Trainerpreneur, anda perlu melanggan pelan bulanan berikut.
+                  </p>
+                </div>
+
+                <div className={`relative border-2 rounded-2xl p-5 transition-all cursor-pointer ${
+                  subscriptionAgreed
+                    ? 'border-teal-500 bg-teal-50/50 shadow-lg shadow-teal-100'
+                    : 'border-zinc-200 bg-white hover:border-zinc-300 hover:shadow-md'
+                }`}
+                onClick={() => setSubscriptionAgreed(!subscriptionAgreed)}
+                >
+                  {subscriptionAgreed && (
+                    <div className="absolute -top-2.5 -right-2.5 w-6 h-6 bg-teal-500 rounded-full flex items-center justify-center shadow-md">
+                      <Check size={14} className="text-white" />
+                    </div>
+                  )}
+
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <Sparkles size={16} className="text-amber-500" />
+                        <span className="text-sm font-bold text-zinc-900">Pelan Trainer</span>
+                      </div>
+                      <p className="text-xs text-zinc-500">Akses penuh ke platform Trainerpreneur</p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-extrabold text-zinc-900">RM19<span className="text-base">.90</span></div>
+                      <span className="text-xs text-zinc-400 font-medium">/bulan</span>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-zinc-100 pt-3 space-y-2.5">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center shrink-0">
+                        <Check size={10} className="text-teal-600" />
+                      </div>
+                      <span className="text-xs text-zinc-700">Profil trainer tersenarai di direktori utama</span>
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center shrink-0">
+                        <Check size={10} className="text-teal-600" />
+                      </div>
+                      <span className="text-xs text-zinc-700">Paparkan kursus & program latihan anda</span>
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center shrink-0">
+                        <Check size={10} className="text-teal-600" />
+                      </div>
+                      <span className="text-xs text-zinc-700">Terima pendaftaran peserta secara online</span>
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center shrink-0">
+                        <Check size={10} className="text-teal-600" />
+                      </div>
+                      <span className="text-xs text-zinc-700">Dashboard analitik & laporan maklum balas</span>
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center shrink-0">
+                        <Check size={10} className="text-teal-600" />
+                      </div>
+                      <span className="text-xs text-zinc-700">Sijil HRD Corp Claimable dipaparkan</span>
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center shrink-0">
+                        <Check size={10} className="text-teal-600" />
+                      </div>
+                      <span className="text-xs text-zinc-700">QR code untuk feedback peserta</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 space-y-2">
+                  <div className="flex items-start gap-2">
+                    <Info size={14} className="text-amber-600 shrink-0 mt-0.5" />
+                    <div className="text-xs text-amber-800 space-y-1">
+                      <p className="font-bold">Cara Pembayaran:</p>
+                      <p>Selepas pendaftaran selesai, pihak kami akan menghubungi anda melalui emel/telefon untuk proses pembayaran langganan RM19.90/bulan.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <label className="flex items-start gap-2.5 cursor-pointer group" onClick={(e) => e.stopPropagation()}>
+                  <input
+                    type="checkbox"
+                    checked={subscriptionAgreed}
+                    onChange={(e) => setSubscriptionAgreed(e.target.checked)}
+                    className="mt-0.5 w-4 h-4 rounded border-zinc-300 text-teal-600 focus:ring-teal-500 cursor-pointer"
+                  />
+                  <span className="text-xs text-zinc-600 group-hover:text-zinc-800 transition-colors">
+                    Saya bersetuju untuk melanggan pelan Trainer pada kadar <strong className="text-zinc-900">RM19.90/bulan</strong> dan memahami bahawa pembayaran akan diproses selepas pendaftaran.
+                  </span>
+                </label>
               </div>
             )}
 
@@ -666,9 +788,22 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd }: AddTrainerMo
 
           {/* Footer */}
           <div className="border-t border-zinc-200 bg-zinc-50 p-4 flex items-center justify-between">
-            {activeTab === 1 ? (
+            {activeTab === 0 ? (
               <>
-                <div className="text-xs text-zinc-500">Medan bertanda * diperlukan.</div>
+                <div className="text-xs text-zinc-500">Pilih pelan langganan untuk meneruskan.</div>
+                <button type="button" onClick={() => { if (subscriptionAgreed) setActiveTab(1); }}
+                  disabled={!subscriptionAgreed}
+                  className="px-5 py-2 rounded-full bg-red-600 hover:bg-red-700 text-white text-sm font-bold shadow-md transition-all duration-300 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  id="next-step-btn">
+                  Seterusnya: Profil →
+                </button>
+              </>
+            ) : activeTab === 1 ? (
+              <>
+                <button type="button" onClick={() => setActiveTab(0)}
+                  className="px-4 py-2 rounded-full border border-zinc-200 text-zinc-700 hover:bg-zinc-100 text-sm font-bold transition-all cursor-pointer bg-white shadow-sm">
+                  ← Langganan
+                </button>
                 <button type="button" onClick={handleNextTab}
                   className="px-5 py-2 rounded-full bg-red-600 hover:bg-red-700 text-white text-sm font-bold shadow-md transition-all duration-300 cursor-pointer"
                   id="next-step-btn">
