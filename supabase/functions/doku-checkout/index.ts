@@ -61,12 +61,13 @@ Deno.serve(async (req: Request) => {
     const {
       trainer_name,
       trainer_email,
+      trainer_phone,
       trainer_id,
       plan,
       amount,
     } = await req.json();
 
-    if (!trainer_name || !trainer_email || !trainer_id || !amount) {
+    if (!trainer_name || !trainer_email || !trainer_phone || !trainer_id || !amount) {
       return new Response(
         JSON.stringify({ error: "Missing required fields" }),
         {
@@ -92,6 +93,7 @@ Deno.serve(async (req: Request) => {
       customer: {
         name: trainer_name,
         email: trainer_email,
+        phone: trainer_phone,
       },
     };
 
@@ -108,8 +110,9 @@ Deno.serve(async (req: Request) => {
 
     const signature = await hmacSha256Base64(secretKey, signatureComponents);
 
+    const dokuApiBase = Deno.env.get("DOKU_API_BASE") ?? "https://api.doku.com";
     const dokuResponse = await fetch(
-      `https://api-sandbox.doku.com${requestTarget}`,
+      `${dokuApiBase}${requestTarget}`,
       {
         method: "POST",
         headers: {

@@ -333,6 +333,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
         body: JSON.stringify({
           trainer_name: paymentName.trim(),
           trainer_email: paymentEmail.trim(),
+          trainer_phone: paymentPhone.trim(),
           trainer_id: tempId,
           plan: selectedPlan,
           amount: selectedPlan === 'special' ? 4990 : 1990,
