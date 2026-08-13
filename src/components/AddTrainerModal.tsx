@@ -148,6 +148,10 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [paymentInitiated, setPaymentInitiated] = useState(false);
+  const [paymentName, setPaymentName] = useState('');
+  const [paymentEmail, setPaymentEmail] = useState('');
+  const [paymentPhone, setPaymentPhone] = useState('');
 
   useEffect(() => {
     if (!isOpen) {
@@ -288,7 +292,30 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
 
     onAdd(newTrainer, newPortfolio);
 
-    // Initiate DOKU payment
+    // Reset form after save
+    setName(''); setTitle(''); setCategory('safety'); setBio('');
+    setExperience('5 Years'); setEmail(''); setPhone(''); setPassword('');
+    setIcNumber(''); setTttCertNo('');
+    setCertifications(['']); setSkills(['']); setAcademicQualification(['']);
+    setProfessionalQualification(['']); setPreviousCompanies(['']); setTrainingTopics(['']);
+    setCourseTitle(''); setCourseLevel('Asas'); setCourseDescription('');
+    setCourseDuration('2 Hari (16 Jam)'); setCourseOutcomes(['']);
+    setAvatarFile(null); setAvatarPreview(''); setUploadError('');
+    setActiveTab(0); setErrors([]); setAgreedTnC(false); setSubscriptionAgreed(false); setSelectedPlan('standard');
+    setPaymentLoading(false); setPaymentUrl(null); setPaymentError(null); setPaymentInitiated(false);
+    setPaymentName(''); setPaymentEmail(''); setPaymentPhone('');
+    onClose();
+  };
+
+  const handleInitiatePayment = async () => {
+    const payErrors: string[] = [];
+    if (!paymentName.trim()) payErrors.push('Sila masukkan nama anda.');
+    if (!paymentEmail.trim() || !paymentEmail.includes('@')) payErrors.push('Sila masukkan emel yang sah.');
+    if (!paymentPhone.trim()) payErrors.push('Sila masukkan nombor telefon.');
+    if (!subscriptionAgreed) payErrors.push('Sila setuju dengan terma langganan.');
+    if (payErrors.length > 0) { setErrors(payErrors); return; }
+    setErrors([]);
+
     setPaymentLoading(true);
     setPaymentError(null);
     setPaymentUrl(null);
@@ -296,6 +323,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
     try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
       const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+      const tempId = `TMP-${Date.now()}`;
       const res = await fetch(`${supabaseUrl}/functions/v1/doku-checkout`, {
         method: 'POST',
         headers: {
@@ -303,11 +331,11 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
           'Authorization': `Bearer ${supabaseAnonKey}`,
         },
         body: JSON.stringify({
-          trainer_name: name.trim(),
-          trainer_email: email.trim(),
-          trainer_id: trainerId,
+          trainer_name: paymentName.trim(),
+          trainer_email: paymentEmail.trim(),
+          trainer_id: tempId,
           plan: selectedPlan,
-          amount: 1990,
+          amount: selectedPlan === 'special' ? 4990 : 1990,
         }),
       });
 
@@ -319,8 +347,13 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
       const data = await res.json();
       if (data.payment_url) {
         setPaymentUrl(data.payment_url);
+        setPaymentInitiated(true);
+        // Pre-fill profile fields from payment info
+        setName(paymentName.trim());
+        setEmail(paymentEmail.trim());
+        setPhone(paymentPhone.trim());
       } else {
-        setPaymentError('Pembayaran berjaya dimulakan tetapi URL tidak diterima. Sila hubungi admin.');
+        setPaymentError('URL pembayaran tidak diterima. Sila hubungi admin.');
       }
     } catch (err) {
       setPaymentError((err as Error).message || 'Gagal memulakan pembayaran. Sila hubungi admin.');
@@ -540,16 +573,30 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                   )}
                 </div>
 
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 space-y-2">
-                  <div className="flex items-start gap-2">
-                    <Info size={14} className="text-amber-600 shrink-0 mt-0.5" />
-                    <div className="text-xs text-amber-800 space-y-1">
-                      <p className="font-bold">Cara Pembayaran:</p>
-                      <p>
-                        Selepas pendaftaran selesai, pihak kami akan menghubungi anda melalui emel/telefon untuk proses pembayaran langganan RM19.90/bulan.
-                        {selectedPlan === 'special' && ' Bulan pertama adalah PERCUMA — bayaran bermula bulan ke-2.'}
-                      </p>
+                {/* Basic contact info for payment */}
+                <div className="space-y-3 bg-zinc-50 border border-zinc-200 rounded-xl p-4">
+                  <p className="text-xs font-bold text-zinc-700 flex items-center gap-1.5">
+                    <User size={13} /> Maklumat Asas untuk Pembayaran
+                  </p>
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[11px] font-semibold text-zinc-600 mb-1 block">Nama Penuh *</label>
+                      <input type="text" value={paymentName} onChange={(e) => setPaymentName(e.target.value)}
+                        placeholder="Nama penuh anda"
+                        className="w-full px-3 py-2 rounded-lg border border-zinc-200 text-sm focus:ring-2 focus:ring-red-200 focus:border-red-400 outline-none transition-all bg-white" />
                     </div>
+                    <div>
+                      <label className="text-[11px] font-semibold text-zinc-600 mb-1 block">Emel *</label>
+                      <input type="email" value={paymentEmail} onChange={(e) => setPaymentEmail(e.target.value)}
+                        placeholder="emel@contoh.com"
+                        className="w-full px-3 py-2 rounded-lg border border-zinc-200 text-sm focus:ring-2 focus:ring-red-200 focus:border-red-400 outline-none transition-all bg-white" />
+                    </div>
+                  </div>
+                  <div className="sm:w-1/2">
+                    <label className="text-[11px] font-semibold text-zinc-600 mb-1 block">No. Telefon *</label>
+                    <input type="tel" value={paymentPhone} onChange={(e) => setPaymentPhone(e.target.value)}
+                      placeholder="012-3456789"
+                      className="w-full px-3 py-2 rounded-lg border border-zinc-200 text-sm focus:ring-2 focus:ring-red-200 focus:border-red-400 outline-none transition-all bg-white" />
                   </div>
                 </div>
 
@@ -860,8 +907,8 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
             )}
           </form>
 
-          {/* Payment overlay */}
-          {(paymentLoading || paymentUrl || paymentError) && (
+          {/* Payment overlay — shows on Tab 0 when payment is processing */}
+          {(paymentLoading || paymentUrl || (paymentError && !paymentInitiated)) && (
             <div className="absolute inset-0 z-50 bg-white flex flex-col items-center justify-center p-8 text-center rounded-2xl">
               {paymentLoading && (
                 <>
@@ -879,9 +926,9 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center mb-5 shadow-lg">
                     <Check size={32} className="text-white" />
                   </div>
-                  <h3 className="text-lg font-bold text-zinc-900 mb-2">Pendaftaran Berjaya!</h3>
+                  <h3 className="text-lg font-bold text-zinc-900 mb-2">Sedia untuk Pembayaran!</h3>
                   <p className="text-sm text-zinc-500 max-w-xs mb-6">
-                    Profil trainer telah disimpan. Sila teruskan ke halaman pembayaran untuk mengaktifkan akaun anda.
+                    Sila selesaikan pembayaran di halaman DOKU. Selepas bayar, teruskan ke langkah seterusnya untuk melengkapkan profil anda.
                   </p>
                   <a
                     href={paymentUrl}
@@ -890,66 +937,38 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                     className="px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-bold shadow-lg transition-all duration-300 flex items-center gap-2"
                   >
                     <CreditCard size={16} />
-                    Teruskan ke Pembayaran DOKU
+                    Bayar di DOKU
                     <ExternalLink size={14} />
                   </a>
                   <button
                     type="button"
                     onClick={() => {
-                      setName(''); setTitle(''); setCategory('safety'); setBio('');
-                      setExperience('5 Years'); setEmail(''); setPhone(''); setPassword('');
-                      setIcNumber(''); setTttCertNo('');
-                      setCertifications(['']); setSkills(['']); setAcademicQualification(['']);
-                      setProfessionalQualification(['']); setPreviousCompanies(['']); setTrainingTopics(['']);
-                      setCourseTitle(''); setCourseLevel('Asas'); setCourseDescription('');
-                      setCourseDuration('2 Hari (16 Jam)'); setCourseOutcomes(['']);
-                      setAvatarFile(null); setAvatarPreview(''); setUploadError('');
-                      setActiveTab(0); setErrors([]); setAgreedTnC(false); setSubscriptionAgreed(false); setSelectedPlan('standard');
-                      setPaymentLoading(false); setPaymentUrl(null); setPaymentError(null);
-                      onClose();
+                      setPaymentUrl(null);
+                      setActiveTab(1);
                     }}
-                    className="mt-4 text-xs text-zinc-400 hover:text-zinc-600 transition-colors cursor-pointer"
+                    className="mt-5 px-5 py-2 rounded-full bg-zinc-800 hover:bg-zinc-900 text-white text-sm font-bold shadow-md transition-all cursor-pointer flex items-center gap-1.5"
                   >
-                    Tutup & bayar kemudian
+                    Teruskan ke Profil →
                   </button>
+                  <p className="mt-3 text-[11px] text-zinc-400">Anda boleh bayar dahulu, kemudian lengkapkan profil.</p>
                 </>
               )}
 
               {paymentError && !paymentUrl && !paymentLoading && (
                 <>
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center mb-5 shadow-lg">
-                    <Check size={32} className="text-white" />
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center mb-5 shadow-lg">
+                    <ShieldAlert size={32} className="text-white" />
                   </div>
-                  <h3 className="text-lg font-bold text-zinc-900 mb-2">Pendaftaran Berjaya!</h3>
-                  <p className="text-sm text-zinc-500 max-w-xs mb-3">
-                    Profil trainer telah berjaya disimpan.
-                  </p>
-                  <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-5 max-w-xs">
-                    <div className="flex items-start gap-2">
-                      <Info size={14} className="text-amber-600 shrink-0 mt-0.5" />
-                      <p className="text-xs text-amber-800">
-                        Pembayaran tidak dapat dimulakan secara automatik. Pihak kami akan menghubungi anda untuk proses pembayaran.
-                      </p>
-                    </div>
+                  <h3 className="text-lg font-bold text-zinc-900 mb-2">Pembayaran Gagal</h3>
+                  <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-5 max-w-xs">
+                    <p className="text-xs text-red-800">{paymentError}</p>
                   </div>
                   <button
                     type="button"
-                    onClick={() => {
-                      setName(''); setTitle(''); setCategory('safety'); setBio('');
-                      setExperience('5 Years'); setEmail(''); setPhone(''); setPassword('');
-                      setIcNumber(''); setTttCertNo('');
-                      setCertifications(['']); setSkills(['']); setAcademicQualification(['']);
-                      setProfessionalQualification(['']); setPreviousCompanies(['']); setTrainingTopics(['']);
-                      setCourseTitle(''); setCourseLevel('Asas'); setCourseDescription('');
-                      setCourseDuration('2 Hari (16 Jam)'); setCourseOutcomes(['']);
-                      setAvatarFile(null); setAvatarPreview(''); setUploadError('');
-                      setActiveTab(0); setErrors([]); setAgreedTnC(false); setSubscriptionAgreed(false); setSelectedPlan('standard');
-                      setPaymentLoading(false); setPaymentUrl(null); setPaymentError(null);
-                      onClose();
-                    }}
+                    onClick={() => { setPaymentError(null); }}
                     className="px-5 py-2 rounded-full bg-zinc-800 hover:bg-zinc-900 text-white text-sm font-bold shadow-md transition-all cursor-pointer"
                   >
-                    Tutup
+                    Cuba Lagi
                   </button>
                 </>
               )}
@@ -960,13 +979,24 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
           <div className="border-t border-zinc-200 bg-zinc-50 p-4 flex items-center justify-between">
             {activeTab === 0 ? (
               <>
-                <div className="text-xs text-zinc-500">Pilih pelan langganan untuk meneruskan.</div>
-                <button type="button" onClick={() => { if (subscriptionAgreed) setActiveTab(1); }}
-                  disabled={!subscriptionAgreed}
-                  className="px-5 py-2 rounded-full bg-red-600 hover:bg-red-700 text-white text-sm font-bold shadow-md transition-all duration-300 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                  id="next-step-btn">
-                  Seterusnya: Profil →
-                </button>
+                <div className="text-xs text-zinc-500">
+                  {paymentInitiated ? 'Pembayaran telah dimulakan.' : 'Isi maklumat & bayar untuk meneruskan.'}
+                </div>
+                {paymentInitiated ? (
+                  <button type="button" onClick={() => setActiveTab(1)}
+                    className="px-5 py-2 rounded-full bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold shadow-md transition-all duration-300 cursor-pointer"
+                    id="next-step-btn">
+                    Teruskan ke Profil →
+                  </button>
+                ) : (
+                  <button type="button" onClick={handleInitiatePayment}
+                    disabled={!subscriptionAgreed || paymentLoading}
+                    className="px-5 py-2 rounded-full bg-red-600 hover:bg-red-700 text-white text-sm font-bold shadow-md transition-all duration-300 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+                    id="next-step-btn">
+                    <CreditCard size={15} />
+                    Bayar Sekarang
+                  </button>
+                )}
               </>
             ) : activeTab === 1 ? (
               <>
