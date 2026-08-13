@@ -1,5 +1,4 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { encode as base64Encode } from "jsr:@std/encoding@1/base64";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,10 +7,16 @@ const corsHeaders = {
     "Content-Type, Authorization, X-Client-Info, Apikey",
 };
 
+function uint8ToBase64(bytes: Uint8Array): string {
+  let binary = "";
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary);
+}
+
 async function sha256Base64(data: string): Promise<string> {
   const encoded = new TextEncoder().encode(data);
   const hash = await crypto.subtle.digest("SHA-256", encoded);
-  return base64Encode(new Uint8Array(hash));
+  return uint8ToBase64(new Uint8Array(hash));
 }
 
 async function hmacSha256Base64(
@@ -31,7 +36,7 @@ async function hmacSha256Base64(
     cryptoKey,
     new TextEncoder().encode(data)
   );
-  return base64Encode(new Uint8Array(sig));
+  return uint8ToBase64(new Uint8Array(sig));
 }
 
 Deno.serve(async (req: Request) => {

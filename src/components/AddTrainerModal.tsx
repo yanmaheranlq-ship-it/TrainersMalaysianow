@@ -341,17 +341,22 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
 
       if (!res.ok) {
         const errData = await res.json().catch(() => null);
-        throw new Error(errData?.error || `Payment request failed (${res.status})`);
+        const detail = errData?.details?.error?.message || errData?.error || '';
+        if (detail.toLowerCase().includes('invalid_client') || detail.toLowerCase().includes('invalid client')) {
+          throw new Error('Konfigurasi pembayaran belum lengkap. Sila hubungi admin untuk mengaktifkan akaun DOKU.');
+        }
+        throw new Error(detail || `Permintaan pembayaran gagal (${res.status})`);
       }
 
       const data = await res.json();
       if (data.payment_url) {
         setPaymentUrl(data.payment_url);
         setPaymentInitiated(true);
-        // Pre-fill profile fields from payment info
         setName(paymentName.trim());
         setEmail(paymentEmail.trim());
         setPhone(paymentPhone.trim());
+      } else if (data.raw) {
+        setPaymentError('URL pembayaran tidak diterima daripada DOKU. Sila cuba lagi atau hubungi admin.');
       } else {
         setPaymentError('URL pembayaran tidak diterima. Sila hubungi admin.');
       }
