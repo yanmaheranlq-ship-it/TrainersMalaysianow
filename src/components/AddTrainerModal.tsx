@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, UserPlus, Info, BookOpen, User, Briefcase, Mail, Phone, Award, ShieldAlert, BadgePlus, Eye, EyeOff, Upload, Image as ImageIcon, Trash2, IdCard, FileCheck, Plus, GripVertical, CreditCard, Check, Crown, Sparkles } from 'lucide-react';
+import { X, UserPlus, Info, BookOpen, User, Briefcase, Mail, Phone, Award, ShieldAlert, BadgePlus, Eye, EyeOff, Upload, Image as ImageIcon, Trash2, IdCard, FileCheck, Plus, GripVertical, CreditCard, Check, Crown, Sparkles, ExternalLink, Loader as Loader2 } from 'lucide-react';
 import { Trainer, PortfolioItem, CategoryType } from '../types';
 import { supabase } from '../lib/supabase';
 
@@ -145,6 +145,9 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
   const [agreedTnC, setAgreedTnC] = useState(false);
   const [subscriptionAgreed, setSubscriptionAgreed] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<'standard' | 'special'>('standard');
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isOpen) {
@@ -285,17 +288,45 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
 
     onAdd(newTrainer, newPortfolio);
 
-    // Reset Form
-    setName(''); setTitle(''); setCategory('safety'); setBio('');
-    setExperience('5 Years'); setEmail(''); setPhone(''); setPassword('');
-    setIcNumber(''); setTttCertNo('');
-    setCertifications(['']); setSkills(['']); setAcademicQualification(['']);
-    setProfessionalQualification(['']); setPreviousCompanies(['']); setTrainingTopics(['']);
-    setCourseTitle(''); setCourseLevel('Asas'); setCourseDescription('');
-    setCourseDuration('2 Hari (16 Jam)'); setCourseOutcomes(['']);
-    setAvatarFile(null); setAvatarPreview(''); setUploadError('');
-    setActiveTab(0); setErrors([]); setAgreedTnC(false); setSubscriptionAgreed(false); setSelectedPlan('standard');
-    onClose();
+    // Initiate DOKU payment
+    setPaymentLoading(true);
+    setPaymentError(null);
+    setPaymentUrl(null);
+
+    try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+      const res = await fetch(`${supabaseUrl}/functions/v1/doku-checkout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseAnonKey}`,
+        },
+        body: JSON.stringify({
+          trainer_name: name.trim(),
+          trainer_email: email.trim(),
+          trainer_id: trainerId,
+          plan: selectedPlan,
+          amount: 1990,
+        }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        throw new Error(errData?.error || `Payment request failed (${res.status})`);
+      }
+
+      const data = await res.json();
+      if (data.payment_url) {
+        setPaymentUrl(data.payment_url);
+      } else {
+        setPaymentError('Pembayaran berjaya dimulakan tetapi URL tidak diterima. Sila hubungi admin.');
+      }
+    } catch (err) {
+      setPaymentError((err as Error).message || 'Gagal memulakan pembayaran. Sila hubungi admin.');
+    } finally {
+      setPaymentLoading(false);
+    }
   };
 
   return (
@@ -828,6 +859,102 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
               </div>
             )}
           </form>
+
+          {/* Payment overlay */}
+          {(paymentLoading || paymentUrl || paymentError) && (
+            <div className="absolute inset-0 z-50 bg-white flex flex-col items-center justify-center p-8 text-center rounded-2xl">
+              {paymentLoading && (
+                <>
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mb-5 shadow-lg animate-pulse">
+                    <CreditCard size={32} className="text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold text-zinc-900 mb-2">Menyediakan Pembayaran...</h3>
+                  <p className="text-sm text-zinc-500 max-w-xs">Sila tunggu sebentar. Kami sedang menghubungkan anda ke halaman pembayaran DOKU.</p>
+                  <Loader2 size={24} className="text-amber-500 mt-5 animate-spin" />
+                </>
+              )}
+
+              {paymentUrl && (
+                <>
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center mb-5 shadow-lg">
+                    <Check size={32} className="text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold text-zinc-900 mb-2">Pendaftaran Berjaya!</h3>
+                  <p className="text-sm text-zinc-500 max-w-xs mb-6">
+                    Profil trainer telah disimpan. Sila teruskan ke halaman pembayaran untuk mengaktifkan akaun anda.
+                  </p>
+                  <a
+                    href={paymentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-bold shadow-lg transition-all duration-300 flex items-center gap-2"
+                  >
+                    <CreditCard size={16} />
+                    Teruskan ke Pembayaran DOKU
+                    <ExternalLink size={14} />
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setName(''); setTitle(''); setCategory('safety'); setBio('');
+                      setExperience('5 Years'); setEmail(''); setPhone(''); setPassword('');
+                      setIcNumber(''); setTttCertNo('');
+                      setCertifications(['']); setSkills(['']); setAcademicQualification(['']);
+                      setProfessionalQualification(['']); setPreviousCompanies(['']); setTrainingTopics(['']);
+                      setCourseTitle(''); setCourseLevel('Asas'); setCourseDescription('');
+                      setCourseDuration('2 Hari (16 Jam)'); setCourseOutcomes(['']);
+                      setAvatarFile(null); setAvatarPreview(''); setUploadError('');
+                      setActiveTab(0); setErrors([]); setAgreedTnC(false); setSubscriptionAgreed(false); setSelectedPlan('standard');
+                      setPaymentLoading(false); setPaymentUrl(null); setPaymentError(null);
+                      onClose();
+                    }}
+                    className="mt-4 text-xs text-zinc-400 hover:text-zinc-600 transition-colors cursor-pointer"
+                  >
+                    Tutup & bayar kemudian
+                  </button>
+                </>
+              )}
+
+              {paymentError && !paymentUrl && !paymentLoading && (
+                <>
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center mb-5 shadow-lg">
+                    <Check size={32} className="text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold text-zinc-900 mb-2">Pendaftaran Berjaya!</h3>
+                  <p className="text-sm text-zinc-500 max-w-xs mb-3">
+                    Profil trainer telah berjaya disimpan.
+                  </p>
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-5 max-w-xs">
+                    <div className="flex items-start gap-2">
+                      <Info size={14} className="text-amber-600 shrink-0 mt-0.5" />
+                      <p className="text-xs text-amber-800">
+                        Pembayaran tidak dapat dimulakan secara automatik. Pihak kami akan menghubungi anda untuk proses pembayaran.
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setName(''); setTitle(''); setCategory('safety'); setBio('');
+                      setExperience('5 Years'); setEmail(''); setPhone(''); setPassword('');
+                      setIcNumber(''); setTttCertNo('');
+                      setCertifications(['']); setSkills(['']); setAcademicQualification(['']);
+                      setProfessionalQualification(['']); setPreviousCompanies(['']); setTrainingTopics(['']);
+                      setCourseTitle(''); setCourseLevel('Asas'); setCourseDescription('');
+                      setCourseDuration('2 Hari (16 Jam)'); setCourseOutcomes(['']);
+                      setAvatarFile(null); setAvatarPreview(''); setUploadError('');
+                      setActiveTab(0); setErrors([]); setAgreedTnC(false); setSubscriptionAgreed(false); setSelectedPlan('standard');
+                      setPaymentLoading(false); setPaymentUrl(null); setPaymentError(null);
+                      onClose();
+                    }}
+                    className="px-5 py-2 rounded-full bg-zinc-800 hover:bg-zinc-900 text-white text-sm font-bold shadow-md transition-all cursor-pointer"
+                  >
+                    Tutup
+                  </button>
+                </>
+              )}
+            </div>
+          )}
 
           {/* Footer */}
           <div className="border-t border-zinc-200 bg-zinc-50 p-4 flex items-center justify-between">
