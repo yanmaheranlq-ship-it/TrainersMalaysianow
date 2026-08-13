@@ -118,7 +118,22 @@ Deno.serve(async (req: Request) => {
       }
     );
 
-    const dokuData = await dokuResponse.json();
+    const dokuText = await dokuResponse.text();
+    let dokuData: Record<string, unknown>;
+    try {
+      dokuData = JSON.parse(dokuText);
+    } catch {
+      return new Response(
+        JSON.stringify({
+          error: "Invalid response from DOKU",
+          raw: dokuText.slice(0, 500),
+        }),
+        {
+          status: 502,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
 
     if (!dokuResponse.ok) {
       return new Response(
@@ -133,9 +148,14 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    const resp = dokuData.response as Record<string, unknown> | undefined;
+    const payment = (resp?.payment ?? dokuData.payment) as Record<string, unknown> | undefined;
+    const paymentUrl = payment?.url as string | undefined
+      ?? (dokuData as Record<string, unknown>).credit_card_token_page as string | undefined;
+
     return new Response(
       JSON.stringify({
-        payment_url: dokuData.response?.payment?.url ?? dokuData.payment?.url,
+        payment_url: paymentUrl ?? null,
         invoice_number: invoiceNumber,
         plan,
         raw: dokuData,

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, UserPlus, Info, BookOpen, User, Briefcase, Mail, Phone, Award, ShieldAlert, BadgePlus, Eye, EyeOff, Upload, Image as ImageIcon, Trash2, IdCard, FileCheck, Plus, GripVertical, CreditCard, Check, Crown, Sparkles, ExternalLink, Loader as Loader2 } from 'lucide-react';
+import { X, UserPlus, Info, BookOpen, User, Briefcase, Mail, Phone, Award, ShieldAlert, BadgePlus, Eye, EyeOff, Upload, Image as ImageIcon, Trash2, IdCard, FileCheck, Plus, GripVertical, CreditCard, Check, Crown, Sparkles, ExternalLink, Loader as Loader2, Lock } from 'lucide-react';
 import { Trainer, PortfolioItem, CategoryType } from '../types';
 import { supabase } from '../lib/supabase';
 
@@ -415,30 +415,32 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
             </button>
             <button
               type="button"
-              onClick={() => { if (subscriptionAgreed) setActiveTab(1); }}
+              onClick={() => { if (paymentInitiated) setActiveTab(1); }}
               className={`flex-1 py-2.5 sm:py-3.5 text-center text-xs sm:text-sm font-bold border-b-2 flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
                 activeTab === 1
                   ? 'border-red-600 text-red-600 bg-white font-extrabold'
                   : 'border-transparent text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100/50'
               }`}
-              disabled={!subscriptionAgreed}
+              disabled={!paymentInitiated}
             >
               <User size={14} className="sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">2. Profil Trainer</span>
+              {!paymentInitiated && <Lock size={11} className="text-zinc-400" />}
+              <span className="hidden sm:inline">{paymentInitiated ? '2. Profil Trainer' : '2. Profil (Bayar dahulu)'}</span>
               <span className="sm:hidden">2. Profil</span>
             </button>
             <button
               type="button"
-              onClick={() => { if (subscriptionAgreed && validate()) setActiveTab(2); }}
+              onClick={() => { if (paymentInitiated && validate()) setActiveTab(2); }}
               className={`flex-1 py-2.5 sm:py-3.5 text-center text-xs sm:text-sm font-bold border-b-2 flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
                 activeTab === 2
                   ? 'border-red-600 text-red-600 bg-white font-extrabold'
                   : 'border-transparent text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100/50'
               }`}
-              disabled={!subscriptionAgreed || !name.trim() || !title.trim()}
+              disabled={!paymentInitiated || !name.trim() || !title.trim()}
             >
               <BookOpen size={14} className="sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">3. Program Kursus</span>
+              {!paymentInitiated && <Lock size={11} className="text-zinc-400" />}
+              <span className="hidden sm:inline">{paymentInitiated ? '3. Program Kursus' : '3. Kursus (Bayar dahulu)'}</span>
               <span className="sm:hidden">3. Kursus</span>
             </button>
           </div>
