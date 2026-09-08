@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, UserPlus, Info, BookOpen, User, Briefcase, Mail, Phone, Award, ShieldAlert, BadgePlus, Eye, EyeOff, Upload, Image as ImageIcon, Trash2, IdCard, FileCheck, Plus, GripVertical, CreditCard, Check, Crown, Sparkles, Lock } from 'lucide-react';
+import { X, UserPlus, Info, BookOpen, User, Briefcase, Mail, Phone, Award, ShieldAlert, BadgePlus, Eye, EyeOff, Upload, Image as ImageIcon, Trash2, IdCard, FileCheck, Plus, GripVertical, CreditCard, Check, Crown, Sparkles, ExternalLink, Loader as Loader2, Lock } from 'lucide-react';
 import { Trainer, PortfolioItem, CategoryType } from '../types';
 import { supabase } from '../lib/supabase';
 
@@ -145,7 +145,13 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
   const [agreedTnC, setAgreedTnC] = useState(false);
   const [subscriptionAgreed, setSubscriptionAgreed] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<'standard' | 'special'>('standard');
-  const [subscriptionCompleted, setSubscriptionCompleted] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [paymentInitiated, setPaymentInitiated] = useState(false);
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+  const [invoiceNumber, setInvoiceNumber] = useState<string | null>(null);
+  const [pollingPayment, setPollingPayment] = useState(false);
   const [paymentName, setPaymentName] = useState('');
   const [paymentEmail, setPaymentEmail] = useState('');
   const [paymentPhone, setPaymentPhone] = useState('');
@@ -158,6 +164,43 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   }, [isOpen]);
+
+  // Poll the payments table for payment confirmation from DOKU webhook
+  useEffect(() => {
+    if (!invoiceNumber || !paymentInitiated || paymentConfirmed) return;
+    setPollingPayment(true);
+    let stopped = false;
+    const poll = async () => {
+      while (!stopped) {
+        try {
+          const { data, error } = await supabase
+            .from('payments')
+            .select('status')
+            .eq('invoice_number', invoiceNumber)
+            .maybeSingle();
+          if (!stopped && data) {
+            if (data.status === 'paid') {
+              setPaymentConfirmed(true);
+              setPollingPayment(false);
+              setPaymentUrl(null);
+              setActiveTab(1);
+              return;
+            }
+            if (data.status === 'failed') {
+              setPaymentError('Pembayaran DOKU gagal. Sila cuba lagi.');
+              setPollingPayment(false);
+              return;
+            }
+          }
+        } catch (e) {
+          console.error('payment poll error:', e);
+        }
+        await new Promise(r => setTimeout(r, 3000));
+      }
+    };
+    poll();
+    return () => { stopped = true; };
+  }, [invoiceNumber, paymentInitiated, paymentConfirmed]);
 
   if (!isOpen) return null;
 
@@ -287,24 +330,6 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
       participantsCount: 12
     };
 
-    // Create a pending payment record for admin tracking
-    const invoiceNumber = `INV-${trainerId}-${Date.now()}`;
-    try {
-      await supabase.from('payments').insert({
-        invoice_number: invoiceNumber,
-        trainer_name: name.trim(),
-        trainer_email: email.trim(),
-        trainer_phone: phone.trim(),
-        trainer_id: trainerId,
-        plan: selectedPlan,
-        amount: 19.90,
-        status: 'pending',
-        payment_url: null,
-      });
-    } catch (e) {
-      console.error('Failed to create payment record:', e);
-    }
-
     onAdd(newTrainer, newPortfolio);
 
     // Reset form after save
@@ -317,12 +342,12 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
     setCourseDuration('2 Hari (16 Jam)'); setCourseOutcomes(['']);
     setAvatarFile(null); setAvatarPreview(''); setUploadError('');
     setActiveTab(0); setErrors([]); setAgreedTnC(false); setSubscriptionAgreed(false); setSelectedPlan('standard');
-    setSubscriptionCompleted(false);
+    setPaymentLoading(false); setPaymentUrl(null); setPaymentError(null); setPaymentInitiated(false); setPaymentConfirmed(false); setInvoiceNumber(null); setPollingPayment(false);
     setPaymentName(''); setPaymentEmail(''); setPaymentPhone('');
     onClose();
   };
 
-  const handleProceedToProfile = () => {
+  const handleInitiatePayment = async () => {
     const payErrors: string[] = [];
     if (!paymentName.trim()) payErrors.push('Sila masukkan nama anda.');
     if (!paymentEmail.trim() || !paymentEmail.includes('@')) payErrors.push('Sila masukkan emel yang sah.');
@@ -331,11 +356,58 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
     if (payErrors.length > 0) { setErrors(payErrors); return; }
     setErrors([]);
 
-    setName(paymentName.trim());
-    setEmail(paymentEmail.trim());
-    setPhone(paymentPhone.trim());
-    setSubscriptionCompleted(true);
-    setActiveTab(1);
+    setPaymentLoading(true);
+    setPaymentError(null);
+    setPaymentUrl(null);
+
+    try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+      const tempId = `TMP-${Date.now()}`;
+      const res = await fetch(`${supabaseUrl}/functions/v1/doku-checkout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseAnonKey}`,
+        },
+        body: JSON.stringify({
+          trainer_name: paymentName.trim(),
+          trainer_email: paymentEmail.trim(),
+          trainer_phone: paymentPhone.trim(),
+          trainer_id: tempId,
+          plan: selectedPlan,
+          amount: 19.9,
+        }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        const detail = errData?.details?.error?.message || errData?.error || '';
+        if (detail.toLowerCase().includes('invalid_client') || detail.toLowerCase().includes('invalid client')) {
+          throw new Error('Konfigurasi pembayaran belum lengkap. Sila hubungi admin untuk mengaktifkan akaun DOKU.');
+        }
+        throw new Error(detail || `Permintaan pembayaran gagal (${res.status})`);
+      }
+
+      const data = await res.json();
+      if (data.payment_url) {
+        setPaymentUrl(data.payment_url);
+        setPaymentInitiated(true);
+        setPaymentConfirmed(false);
+        setInvoiceNumber(data.invoice_number || null);
+        setName(paymentName.trim());
+        setEmail(paymentEmail.trim());
+        setPhone(paymentPhone.trim());
+      } else if (data.raw) {
+        setPaymentError('URL pembayaran tidak diterima daripada DOKU. Sila cuba lagi atau hubungi admin.');
+      } else {
+        setPaymentError('URL pembayaran tidak diterima. Sila hubungi admin.');
+      }
+    } catch (err) {
+      setPaymentError((err as Error).message || 'Gagal memulakan pembayaran. Sila hubungi admin.');
+    } finally {
+      setPaymentLoading(false);
+    }
   };
 
   return (
@@ -391,32 +463,32 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
             </button>
             <button
               type="button"
-              onClick={() => { if (subscriptionCompleted) setActiveTab(1); }}
+              onClick={() => { if (paymentConfirmed) setActiveTab(1); }}
               className={`flex-1 py-2.5 sm:py-3.5 text-center text-xs sm:text-sm font-bold border-b-2 flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
                 activeTab === 1
                   ? 'border-red-600 text-red-600 bg-white font-extrabold'
                   : 'border-transparent text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100/50'
               }`}
-              disabled={!subscriptionCompleted}
+              disabled={!paymentConfirmed}
             >
               <User size={14} className="sm:w-4 sm:h-4" />
-              {!subscriptionCompleted && <Lock size={11} className="text-zinc-400" />}
-              <span className="hidden sm:inline">{subscriptionCompleted ? '2. Profil Trainer' : '2. Profil'}</span>
+              {!paymentConfirmed && <Lock size={11} className="text-zinc-400" />}
+              <span className="hidden sm:inline">{paymentConfirmed ? '2. Profil Trainer' : '2. Profil (Tunggu bayar)'}</span>
               <span className="sm:hidden">2. Profil</span>
             </button>
             <button
               type="button"
-              onClick={() => { if (subscriptionCompleted && validate()) setActiveTab(2); }}
+              onClick={() => { if (paymentConfirmed && validate()) setActiveTab(2); }}
               className={`flex-1 py-2.5 sm:py-3.5 text-center text-xs sm:text-sm font-bold border-b-2 flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
                 activeTab === 2
                   ? 'border-red-600 text-red-600 bg-white font-extrabold'
                   : 'border-transparent text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100/50'
               }`}
-              disabled={!subscriptionCompleted || !name.trim() || !title.trim()}
+              disabled={!paymentConfirmed || !name.trim() || !title.trim()}
             >
               <BookOpen size={14} className="sm:w-4 sm:h-4" />
-              {!subscriptionCompleted && <Lock size={11} className="text-zinc-400" />}
-              <span className="hidden sm:inline">{subscriptionCompleted ? '3. Program Kursus' : '3. Kursus'}</span>
+              {!paymentConfirmed && <Lock size={11} className="text-zinc-400" />}
+              <span className="hidden sm:inline">{paymentConfirmed ? '3. Program Kursus' : '3. Kursus (Tunggu bayar)'}</span>
               <span className="sm:hidden">3. Kursus</span>
             </button>
           </div>
@@ -554,7 +626,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                 {/* Basic contact info for payment */}
                 <div className="space-y-3 bg-zinc-50 border border-zinc-200 rounded-xl p-4">
                   <p className="text-xs font-bold text-zinc-700 flex items-center gap-1.5">
-                    <User size={13} /> Maklumat Asas Pendaftaran
+                    <User size={13} /> Maklumat Asas untuk Pembayaran
                   </p>
                   <div className="grid sm:grid-cols-2 gap-3">
                     <div>
@@ -587,8 +659,8 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                   />
                   <span className="text-xs text-zinc-600 group-hover:text-zinc-800 transition-colors">
                     {selectedPlan === 'special'
-                      ? <>Saya bersetuju untuk melanggan <strong className="text-zinc-900">Pelan Khas</strong> dengan 1 bulan percuma dan kadar <strong className="text-zinc-900">RM19.90/bulan</strong> bermula bulan ke-2. Bayaran akan dituntut oleh admin selepas pendaftaran.</>
-                      : <>Saya bersetuju untuk melanggan pelan Trainer pada kadar <strong className="text-zinc-900">RM19.90/bulan</strong>. Bayaran akan dituntut oleh admin selepas pendaftaran disahkan.</>
+                      ? <>Saya bersetuju untuk melanggan <strong className="text-zinc-900">Pelan Khas</strong> dengan 1 bulan percuma dan kadar <strong className="text-zinc-900">RM19.90/bulan</strong> bermula bulan ke-2.</>
+                      : <>Saya bersetuju untuk melanggan pelan Trainer pada kadar <strong className="text-zinc-900">RM19.90/bulan</strong> dan memahami bahawa pembayaran akan diproses selepas pendaftaran.</>
                     }
                   </span>
                 </label>
@@ -885,19 +957,130 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
             )}
           </form>
 
+          {/* Payment overlay — shows on Tab 0 when payment is processing or awaiting confirmation */}
+          {(paymentLoading || paymentUrl || pollingPayment || (paymentError && !paymentConfirmed)) && (
+            <div className="absolute inset-0 z-50 bg-white flex flex-col items-center justify-center p-8 text-center rounded-2xl">
+              {paymentLoading && (
+                <>
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mb-5 shadow-lg animate-pulse">
+                    <CreditCard size={32} className="text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold text-zinc-900 mb-2">Menyediakan Pembayaran...</h3>
+                  <p className="text-sm text-zinc-500 max-w-xs">Sila tunggu sebentar. Kami sedang menghubungkan anda ke halaman pembayaran DOKU.</p>
+                  <Loader2 size={24} className="text-amber-500 mt-5 animate-spin" />
+                </>
+              )}
+
+              {paymentUrl && !pollingPayment && (
+                <>
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center mb-5 shadow-lg">
+                    <CreditCard size={32} className="text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold text-zinc-900 mb-2">Bayar di DOKU</h3>
+                  <p className="text-sm text-zinc-500 max-w-xs mb-6">
+                    Klik butang di bawah untuk membuka halaman pembayaran DOKU. Selepas bayaran berjaya, sistem akan mengesahkan secara automatik dan membawa anda ke langkah profil.
+                  </p>
+                  <a
+                    href={paymentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-bold shadow-lg transition-all duration-300 flex items-center gap-2"
+                  >
+                    <CreditCard size={16} />
+                    Bayar di DOKU
+                    <ExternalLink size={14} />
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => { setPaymentUrl(null); setPollingPayment(true); }}
+                    className="mt-4 px-5 py-2 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-sm font-bold border border-zinc-300 transition-all cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Loader2 size={14} className="animate-spin" />
+                    Saya telah bayar — semak status
+                  </button>
+                  <p className="mt-3 text-[11px] text-zinc-400">Selepas bayar di DOKU, sistem akan mengesahkan bayaran anda secara automatik.</p>
+                </>
+              )}
+
+              {pollingPayment && !paymentConfirmed && (
+                <>
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mb-5 shadow-lg">
+                    <Loader2 size={32} className="text-white animate-spin" />
+                  </div>
+                  <h3 className="text-lg font-bold text-zinc-900 mb-2">Menunggu Pengesahan Bayaran...</h3>
+                  <p className="text-sm text-zinc-500 max-w-xs">
+                    Sistem sedang menyemak status bayaran DOKU anda. Halaman profil akan terbuka secara automatik selepas bayaran disahkan.
+                  </p>
+                  {paymentUrl && (
+                    <a
+                      href={paymentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-5 px-5 py-2 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-sm font-bold border border-zinc-300 transition-all cursor-pointer flex items-center gap-1.5"
+                    >
+                      <ExternalLink size={14} />
+                      Buka semula halaman DOKU
+                    </a>
+                  )}
+                </>
+              )}
+
+              {paymentError && !paymentUrl && !paymentLoading && !pollingPayment && (
+                <>
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center mb-5 shadow-lg">
+                    <ShieldAlert size={32} className="text-white" />
+                  </div>
+                  <h3 className="text-lg font-bold text-zinc-900 mb-2">Pembayaran Gagal</h3>
+                  <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-5 max-w-xs">
+                    <p className="text-xs text-red-800">{paymentError}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setPaymentError(null); setPaymentInitiated(false); setInvoiceNumber(null); }}
+                    className="px-5 py-2 rounded-full bg-zinc-800 hover:bg-zinc-900 text-white text-sm font-bold shadow-md transition-all cursor-pointer"
+                  >
+                    Cuba Lagi
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+
           {/* Footer */}
           <div className="border-t border-zinc-200 bg-zinc-50 p-4 flex items-center justify-between">
             {activeTab === 0 ? (
               <>
                 <div className="text-xs text-zinc-500">
-                  {subscriptionCompleted ? 'Langganan aktif! Lengkapkan profil anda.' : 'Pilih pelan & setuju terma untuk meneruskan.'}
+                  {paymentConfirmed ? 'Bayaran disahkan! Lengkapkan profil anda.' : paymentInitiated ? 'Menunggu pengesahan bayaran DOKU...' : 'Isi maklumat & bayar untuk meneruskan.'}
                 </div>
-                <button type="button" onClick={handleProceedToProfile}
-                  disabled={!subscriptionAgreed}
-                  className="px-5 py-2 rounded-full bg-red-600 hover:bg-red-700 text-white text-sm font-bold shadow-md transition-all duration-300 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
-                  id="next-step-btn">
-                  Teruskan ke Profil →
-                </button>
+                {paymentConfirmed ? (
+                  <button type="button" onClick={() => setActiveTab(1)}
+                    className="px-5 py-2 rounded-full bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold shadow-md transition-all duration-300 cursor-pointer"
+                    id="next-step-btn">
+                    Teruskan ke Profil →
+                  </button>
+                ) : paymentInitiated ? (
+                  <div className="flex items-center gap-2">
+                    {paymentUrl && (
+                      <a href={paymentUrl} target="_blank" rel="noopener noreferrer"
+                        className="px-4 py-2 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold shadow-md transition-all cursor-pointer flex items-center gap-1.5">
+                        <ExternalLink size={14} /> Bayar di DOKU
+                      </a>
+                    )}
+                    <div className="flex items-center gap-1.5 text-xs text-zinc-500 font-bold">
+                      <Loader2 size={14} className="animate-spin text-amber-500" />
+                      Menunggu bayaran...
+                    </div>
+                  </div>
+                ) : (
+                  <button type="button" onClick={handleInitiatePayment}
+                    disabled={!subscriptionAgreed || paymentLoading}
+                    className="px-5 py-2 rounded-full bg-red-600 hover:bg-red-700 text-white text-sm font-bold shadow-md transition-all duration-300 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+                    id="next-step-btn">
+                    <CreditCard size={15} />
+                    Bayar Sekarang
+                  </button>
+                )}
               </>
             ) : activeTab === 1 ? (
               <>
