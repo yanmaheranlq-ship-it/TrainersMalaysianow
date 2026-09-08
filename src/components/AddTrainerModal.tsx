@@ -1040,7 +1040,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                     Saya telah bayar — semak status
                   </button>
                   <p className="mt-3 text-[11px] text-zinc-400 leading-relaxed max-w-xs">
-                    Selepas bayar di DOKU, sistem akan mengesahkan bayaran anda secara automatik dan membuka langkah profil trainer.
+                    Bayaran akan disahkan secara automatik sebelum anda melengkapkan profil trainer.
                   </p>
                 </motion.div>
               )}
@@ -1062,9 +1062,9 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mb-5 shadow-lg">
                     <Loader2 size={32} className="text-white animate-spin" />
                   </div>
-                  <h3 className="text-xl font-extrabold text-zinc-900 mb-1.5">Menunggu Pengesahan Bayaran...</h3>
+                  <h3 className="text-xl font-extrabold text-zinc-900 mb-1.5">Mengesahkan bayaran...</h3>
                   <p className="text-sm text-zinc-500 max-w-xs mb-5 leading-relaxed">
-                    Sistem sedang menyemak status bayaran DOKU anda. Halaman profil akan terbuka secara automatik selepas bayaran disahkan.
+                    Kami sedang menyemak bayaran anda. Profil trainer akan dibuka selepas bayaran disahkan.
                   </p>
 
                   {/* Animated status dots */}
@@ -1087,7 +1087,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                       className="px-5 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold shadow-md transition-all cursor-pointer flex items-center gap-1.5"
                     >
                       <ExternalLink size={14} />
-                      Buka semula halaman DOKU
+                      Lengkapkan pembayaran di sini
                     </a>
                   )}
                 </motion.div>
