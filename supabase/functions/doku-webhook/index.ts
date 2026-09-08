@@ -14,6 +14,21 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
+    // Verify the request is from DOKU using the DOKU notification key
+    const dokuKey = Deno.env.get("DOKU_NOTIFICATION_KEY") ?? "";
+    const authHeader = req.headers.get("Authorization") ?? "";
+    const providedKey = authHeader.replace(/^Bearer\s+/i, "").trim();
+
+    if (dokuKey && providedKey && providedKey !== dokuKey) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized: invalid notification key" }),
+        {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
     const payload = await req.json();
 
     // DOKU notification payload contains order.invoice_number and transaction status
