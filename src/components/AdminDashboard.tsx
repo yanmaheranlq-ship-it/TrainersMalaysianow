@@ -467,8 +467,8 @@ export default function AdminDashboard({
                       <Crown size={20} className="text-white" />
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-zinc-900">Link Pakej Percuma Seumur Hidup</h4>
-                      <p className="text-xs text-zinc-500">Kongsi link ini kepada trainer untuk pendaftaran percuma seumur hidup</p>
+                      <h4 className="text-sm font-bold text-zinc-900">Link Lifetime Plan PERCUMA</h4>
+                      <p className="text-xs text-zinc-500">Kongsi link ini kepada trainer untuk mendaftar dengan akses percuma seumur hidup</p>
                     </div>
                   </div>
 
@@ -502,7 +502,7 @@ export default function AdminDashboard({
                   <div className="flex items-start gap-2 bg-white/60 rounded-lg px-3 py-2.5 border border-amber-100">
                     <Info size={13} className="text-amber-600 shrink-0 mt-0.5" />
                     <p className="text-[11px] text-amber-800 leading-relaxed">
-                      Trainer yang membuka link ini akan melihat pilihan <strong>Pakej Percuma Seumur Hidup</strong> dengan akses penuh percuma selamanya. Link ini boleh dikongsi berkali-kali.
+                      Trainer yang membuka link ini akan melihat pilihan <strong>Lifetime Plan PERCUMA</strong> dengan akses penuh percuma selamanya. Trainer masih perlu mengisi borang pendaftaran, tetapi tiada bayaran diperlukan. Link ini boleh dikongsi berkali-kali.
                     </p>
                   </div>
                 </div>
