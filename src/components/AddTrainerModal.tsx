@@ -1033,7 +1033,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                   {/* Secondary action */}
                   <button
                     type="button"
-                    onClick={() => { setPaymentUrl(null); setPollingPayment(true); }}
+                    onClick={() => { setPollingPayment(true); }}
                     className="mt-3 px-5 py-2.5 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-sm font-bold border border-zinc-300 transition-all cursor-pointer flex items-center gap-1.5"
                   >
                     <Loader2 size={14} className="animate-spin" />
@@ -1080,15 +1080,24 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                   </div>
 
                   {paymentUrl && (
-                    <a
-                      href={paymentUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-5 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold shadow-md transition-all cursor-pointer flex items-center gap-1.5"
-                    >
-                      <ExternalLink size={14} />
-                      Lengkapkan pembayaran di sini
-                    </a>
+                    <>
+                      <a
+                        href={paymentUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-5 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold shadow-md transition-all cursor-pointer flex items-center gap-1.5"
+                      >
+                        <ExternalLink size={14} />
+                        Lengkapkan pembayaran di sini
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => setPollingPayment(false)}
+                        className="mt-3 px-5 py-2 text-sm font-bold text-zinc-500 hover:text-zinc-800 transition-colors cursor-pointer"
+                      >
+                        ← Kembali
+                      </button>
+                    </>
                   )}
                 </motion.div>
               )}
