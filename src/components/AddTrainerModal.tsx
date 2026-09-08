@@ -959,7 +959,12 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
 
           {/* Payment overlay — shows on Tab 0 when payment is processing or awaiting confirmation */}
           {(paymentLoading || paymentUrl || pollingPayment || (paymentError && !paymentConfirmed)) && (
-            <div className="absolute inset-0 z-50 bg-white flex flex-col items-center justify-center p-8 text-center rounded-2xl">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-50 bg-gradient-to-br from-zinc-50 via-white to-amber-50/30 flex flex-col items-center justify-center p-6 sm:p-8 text-center rounded-2xl overflow-y-auto"
+            >
               {paymentLoading && (
                 <>
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mb-5 shadow-lg animate-pulse">
@@ -972,78 +977,144 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
               )}
 
               {paymentUrl && !pollingPayment && (
-                <>
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center mb-5 shadow-lg">
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+                  className="flex flex-col items-center w-full max-w-sm"
+                >
+                  {/* Step indicator */}
+                  <div className="flex items-center gap-1.5 mb-6">
+                    <span className="h-1.5 w-8 rounded-full bg-amber-500" />
+                    <span className="h-1.5 w-8 rounded-full bg-amber-500" />
+                    <span className="h-1.5 w-8 rounded-full bg-zinc-200" />
+                  </div>
+
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center mb-5 shadow-lg shadow-teal-200">
                     <CreditCard size={32} className="text-white" />
                   </div>
-                  <h3 className="text-lg font-bold text-zinc-900 mb-2">Bayar di DOKU</h3>
-                  <p className="text-sm text-zinc-500 max-w-xs mb-6">
+                  <h3 className="text-xl font-extrabold text-zinc-900 mb-1.5">Bayar di DOKU</h3>
+                  <p className="text-sm text-zinc-500 max-w-xs mb-6 leading-relaxed">
                     Klik butang di bawah untuk membuka halaman pembayaran DOKU. Selepas bayaran berjaya, sistem akan mengesahkan secara automatik dan membawa anda ke langkah profil.
                   </p>
-                  <a
+
+                  {/* Price summary card */}
+                  <div className="w-full bg-white border border-zinc-200 rounded-xl p-4 mb-5 shadow-sm flex items-center justify-between">
+                    <div className="text-left">
+                      <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
+                        {selectedPlan === 'special' ? 'Pelan Khas' : 'Pelan Trainer'}
+                      </span>
+                      <span className="text-xs text-zinc-500 block mt-0.5">
+                        {selectedPlan === 'special' ? '1 bulan percuma, kemudian' : 'Langganan bulanan'}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-2xl font-extrabold text-zinc-900">RM19<span className="text-base">.90</span></span>
+                      <span className="text-xs text-zinc-400 font-medium block">/bulan</span>
+                    </div>
+                  </div>
+
+                  {/* Primary CTA */}
+                  <motion.a
                     href={paymentUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-6 py-3 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-bold shadow-lg transition-all duration-300 flex items-center gap-2"
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    className="w-full px-6 py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-base font-extrabold shadow-xl shadow-amber-200 transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer"
                   >
-                    <CreditCard size={16} />
-                    Bayar di DOKU
-                    <ExternalLink size={14} />
-                  </a>
+                    <CreditCard size={20} />
+                    Teruskan Bayaran ke DOKU
+                    <ExternalLink size={16} />
+                  </motion.a>
+
+                  {/* Secondary action */}
                   <button
                     type="button"
                     onClick={() => { setPaymentUrl(null); setPollingPayment(true); }}
-                    className="mt-4 px-5 py-2 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-sm font-bold border border-zinc-300 transition-all cursor-pointer flex items-center gap-1.5"
+                    className="mt-3 px-5 py-2.5 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-sm font-bold border border-zinc-300 transition-all cursor-pointer flex items-center gap-1.5"
                   >
                     <Loader2 size={14} className="animate-spin" />
                     Saya telah bayar — semak status
                   </button>
-                  <p className="mt-3 text-[11px] text-zinc-400">Selepas bayar di DOKU, sistem akan mengesahkan bayaran anda secara automatik.</p>
-                </>
+                  <p className="mt-3 text-[11px] text-zinc-400 leading-relaxed max-w-xs">
+                    Selepas bayar di DOKU, sistem akan mengesahkan bayaran anda secara automatik dan membuka langkah profil trainer.
+                  </p>
+                </motion.div>
               )}
 
               {pollingPayment && !paymentConfirmed && (
-                <>
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+                  className="flex flex-col items-center w-full max-w-sm"
+                >
+                  {/* Step indicator */}
+                  <div className="flex items-center gap-1.5 mb-6">
+                    <span className="h-1.5 w-8 rounded-full bg-amber-500" />
+                    <span className="h-1.5 w-8 rounded-full bg-amber-500" />
+                    <span className="h-1.5 w-8 rounded-full bg-zinc-200" />
+                  </div>
+
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mb-5 shadow-lg">
                     <Loader2 size={32} className="text-white animate-spin" />
                   </div>
-                  <h3 className="text-lg font-bold text-zinc-900 mb-2">Menunggu Pengesahan Bayaran...</h3>
-                  <p className="text-sm text-zinc-500 max-w-xs">
+                  <h3 className="text-xl font-extrabold text-zinc-900 mb-1.5">Menunggu Pengesahan Bayaran...</h3>
+                  <p className="text-sm text-zinc-500 max-w-xs mb-5 leading-relaxed">
                     Sistem sedang menyemak status bayaran DOKU anda. Halaman profil akan terbuka secara automatik selepas bayaran disahkan.
                   </p>
+
+                  {/* Animated status dots */}
+                  <div className="flex items-center gap-1.5 mb-5">
+                    {[0, 1, 2].map((i) => (
+                      <motion.span
+                        key={i}
+                        animate={{ scale: [1, 1.4, 1], opacity: [0.4, 1, 0.4] }}
+                        transition={{ repeat: Infinity, duration: 1.2, delay: i * 0.2 }}
+                        className="h-2 w-2 rounded-full bg-amber-500"
+                      />
+                    ))}
+                  </div>
+
                   {paymentUrl && (
                     <a
                       href={paymentUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-5 px-5 py-2 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-sm font-bold border border-zinc-300 transition-all cursor-pointer flex items-center gap-1.5"
+                      className="px-5 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold shadow-md transition-all cursor-pointer flex items-center gap-1.5"
                     >
                       <ExternalLink size={14} />
                       Buka semula halaman DOKU
                     </a>
                   )}
-                </>
+                </motion.div>
               )}
 
               {paymentError && !paymentUrl && !paymentLoading && !pollingPayment && (
-                <>
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+                  className="flex flex-col items-center w-full max-w-sm"
+                >
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center mb-5 shadow-lg">
                     <ShieldAlert size={32} className="text-white" />
                   </div>
-                  <h3 className="text-lg font-bold text-zinc-900 mb-2">Pembayaran Gagal</h3>
-                  <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-5 max-w-xs">
+                  <h3 className="text-xl font-extrabold text-zinc-900 mb-2">Pembayaran Gagal</h3>
+                  <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 mb-5 w-full">
                     <p className="text-xs text-red-800">{paymentError}</p>
                   </div>
                   <button
                     type="button"
                     onClick={() => { setPaymentError(null); setPaymentInitiated(false); setInvoiceNumber(null); }}
-                    className="px-5 py-2 rounded-full bg-zinc-800 hover:bg-zinc-900 text-white text-sm font-bold shadow-md transition-all cursor-pointer"
+                    className="px-6 py-3 rounded-full bg-zinc-800 hover:bg-zinc-900 text-white text-sm font-bold shadow-md transition-all cursor-pointer"
                   >
                     Cuba Lagi
                   </button>
-                </>
+                </motion.div>
               )}
-            </div>
+            </motion.div>
           )}
 
           {/* Footer */}
@@ -1063,8 +1134,8 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                   <div className="flex items-center gap-2">
                     {paymentUrl && (
                       <a href={paymentUrl} target="_blank" rel="noopener noreferrer"
-                        className="px-4 py-2 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold shadow-md transition-all cursor-pointer flex items-center gap-1.5">
-                        <ExternalLink size={14} /> Bayar di DOKU
+                        className="px-5 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-extrabold shadow-lg shadow-amber-200 transition-all cursor-pointer flex items-center gap-1.5">
+                        <CreditCard size={15} /> Teruskan Bayaran ke DOKU <ExternalLink size={13} />
                       </a>
                     )}
                     <div className="flex items-center gap-1.5 text-xs text-zinc-500 font-bold">
