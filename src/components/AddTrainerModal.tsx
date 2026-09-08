@@ -315,7 +315,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
       previousCompanies: finalCompanies,
       trainingTopics: finalTrainingTopics,
       subscriptionStatus: 'pending' as const,
-      subscriptionPlan: selectedPlan === 'special' ? 'Pelan Khas (1 Bulan Percuma + RM19.90/bulan)' : 'Pelan Trainer RM19.90/bulan',
+      subscriptionPlan: selectedPlan === 'special' ? 'Pakej Percuma Seumur Hidup' : 'Pelan Trainer RM19.90/bulan',
       subscribedAt: new Date().toISOString(),
     };
 
@@ -364,7 +364,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
     setEmail(paymentEmail.trim());
     setPhone(paymentPhone.trim());
 
-    // Pelan Khas: first month is free (RM0), skip DOKU and mark as paid immediately
+    // Pakej Percuma Seumur Hidup: skip DOKU and mark as paid immediately
     if (selectedPlan === 'special') {
       setPaymentLoading(true);
       try {
@@ -628,13 +628,13 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                         <div>
                           <div className="flex items-center gap-2 mb-1">
                             <Crown size={16} className="text-amber-500" />
-                            <span className="text-sm font-bold text-zinc-900">Pelan Khas</span>
+                            <span className="text-sm font-bold text-zinc-900">Pakej Percuma Seumur Hidup</span>
                           </div>
-                          <p className="text-xs text-zinc-500">Akses penuh + 1 bulan PERCUMA</p>
+                          <p className="text-xs text-zinc-500">Akses penuh PERCUMA selamanya</p>
                         </div>
                         <div className="text-right">
-                          <div className="text-2xl font-extrabold text-zinc-900">RM19<span className="text-base">.90</span></div>
-                          <span className="text-xs text-zinc-400 font-medium">/bulan</span>
+                          <div className="text-2xl font-extrabold text-zinc-900">RM0</div>
+                          <span className="text-xs text-zinc-400 font-medium">/seumur hidup</span>
                         </div>
                       </div>
 
@@ -643,13 +643,13 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                           <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shrink-0">
                             <Sparkles size={12} className="text-white" />
                           </div>
-                          <span className="text-xs font-bold text-amber-900">1 Bulan Pertama PERCUMA!</span>
+                          <span className="text-xs font-bold text-amber-900">PERCUMA Seumur Hidup!</span>
                         </div>
-                        <p className="text-[10px] text-amber-700 mt-1 ml-8">Bayaran bermula bulan ke-2 sahaja</p>
+                        <p className="text-[10px] text-amber-700 mt-1 ml-8">Tiada bayaran langsung</p>
                       </div>
 
                       <div className="border-t border-zinc-100 pt-3 space-y-2">
-                        {['Semua manfaat Pelan Trainer', '1 bulan pertama percuma', 'Paparkan kursus & program latihan', 'Dashboard analitik & maklum balas', 'Sijil HRD Corp Claimable dipaparkan', 'QR code untuk feedback peserta'].map((item, i) => (
+                        {['Semua manfaat Pelan Trainer', 'Akses penuh PERCUMA selamanya', 'Paparkan kursus & program latihan', 'Dashboard analitik & maklum balas', 'Sijil HRD Corp Claimable dipaparkan', 'QR code untuk feedback peserta'].map((item, i) => (
                           <div key={i} className="flex items-center gap-2">
                             <div className={`w-4.5 h-4.5 rounded-full flex items-center justify-center shrink-0 ${i === 1 ? 'bg-amber-100' : 'bg-teal-100'}`}>
                               <Check size={9} className={i === 1 ? 'text-amber-600' : 'text-teal-600'} />
@@ -698,7 +698,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                   />
                   <span className="text-xs text-zinc-600 group-hover:text-zinc-800 transition-colors">
                     {selectedPlan === 'special'
-                      ? <>Saya bersetuju untuk melanggan <strong className="text-zinc-900">Pelan Khas</strong> dengan 1 bulan percuma dan kadar <strong className="text-zinc-900">RM19.90/bulan</strong> bermula bulan ke-2.</>
+                      ? <>Saya bersetuju untuk melanggan <strong className="text-zinc-900">Pakej Percuma Seumur Hidup</strong> dengan akses penuh percuma selamanya.</>
                       : <>Saya bersetuju untuk melanggan pelan Trainer pada kadar <strong className="text-zinc-900">RM19.90/bulan</strong> dan memahami bahawa pembayaran akan diproses selepas pendaftaran.</>
                     }
                   </span>
@@ -1041,10 +1041,10 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                   <div className="w-full bg-white border border-zinc-200 rounded-xl p-4 mb-5 shadow-sm flex items-center justify-between">
                     <div className="text-left">
                       <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
-                        {selectedPlan === 'special' ? 'Pelan Khas' : 'Pelan Trainer'}
+                        {selectedPlan === 'special' ? 'Pakej Percuma Seumur Hidup' : 'Pelan Trainer'}
                       </span>
                       <span className="text-xs text-zinc-500 block mt-0.5">
-                        {selectedPlan === 'special' ? '1 bulan percuma, kemudian' : 'Langganan bulanan'}
+                        {selectedPlan === 'special' ? 'Percuma selamanya' : 'Langganan bulanan'}
                       </span>
                     </div>
                     <div className="text-right">
