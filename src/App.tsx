@@ -310,18 +310,27 @@ export default function App() {
     }
   }, [trainers]);
 
-  useEffect(() => {
+  // State declarations for modals — initialized from URL params for reliable deep-linking
+  const [isSpecialPlan, setIsSpecialPlan] = useState(() => {
     try {
       const params = new URLSearchParams(window.location.search);
       const isSpecialPlanLink = window.location.pathname.replace(/\/$/, '') === '/special';
-      if (params.has('special') || params.get('plan') === 'special' || params.get('plan') === 'lifetime-free' || isSpecialPlanLink) {
-        setIsSpecialPlan(true);
-        setIsAddModalOpen(true);
-      }
+      return params.has('special') || params.get('plan') === 'special' || params.get('plan') === 'lifetime-free' || isSpecialPlanLink;
     } catch (e) {
       console.warn("Failed to read plan param:", e);
+      return false;
     }
-  }, []);
+  });
+  const [isAddModalOpen, setIsAddModalOpen] = useState(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const isSpecialPlanLink = window.location.pathname.replace(/\/$/, '') === '/special';
+      return params.has('special') || params.get('plan') === 'special' || params.get('plan') === 'lifetime-free' || isSpecialPlanLink;
+    } catch (e) {
+      console.warn("Failed to read plan param:", e);
+      return false;
+    }
+  });
 
   // Synchronize selectedTrainer and urlAction to URL search parameters
   useEffect(() => {
@@ -346,8 +355,6 @@ export default function App() {
       console.warn("Failed to update history state due to sandbox constraints", e);
     }
   }, [selectedTrainer, urlAction]);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isSpecialPlan, setIsSpecialPlan] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isAdminDashboardOpen, setIsAdminDashboardOpen] = useState(false);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
