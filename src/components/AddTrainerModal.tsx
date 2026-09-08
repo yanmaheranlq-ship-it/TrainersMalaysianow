@@ -360,6 +360,40 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
     if (payErrors.length > 0) { setErrors(payErrors); return; }
     setErrors([]);
 
+    setName(paymentName.trim());
+    setEmail(paymentEmail.trim());
+    setPhone(paymentPhone.trim());
+
+    // Pelan Khas: first month is free (RM0), skip DOKU and mark as paid immediately
+    if (selectedPlan === 'special') {
+      setPaymentLoading(true);
+      try {
+        const tempId = `TMP-${Date.now()}`;
+        const invNum = `INV-${tempId}-${Date.now()}`;
+        const { error: insErr } = await supabase.from('payments').insert({
+          invoice_number: invNum,
+          trainer_name: paymentName.trim(),
+          trainer_email: paymentEmail.trim(),
+          trainer_phone: paymentPhone.trim(),
+          trainer_id: tempId,
+          plan: 'special',
+          amount: 0,
+          status: 'paid',
+          payment_url: null,
+        });
+        if (insErr) console.error('special plan payment insert failed:', insErr.message);
+        setInvoiceNumber(invNum);
+        setPaymentInitiated(true);
+        setPaymentConfirmed(true);
+        setActiveTab(1);
+      } catch (err) {
+        setPaymentError((err as Error).message || 'Gagal mengaktifkan pelan percuma. Sila cuba lagi.');
+      } finally {
+        setPaymentLoading(false);
+      }
+      return;
+    }
+
     setPaymentLoading(true);
     setPaymentError(null);
     setPaymentUrl(null);
@@ -399,9 +433,6 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
         setPaymentInitiated(true);
         setPaymentConfirmed(false);
         setInvoiceNumber(data.invoice_number || null);
-        setName(paymentName.trim());
-        setEmail(paymentEmail.trim());
-        setPhone(paymentPhone.trim());
       } else if (data.raw) {
         setPaymentError('URL pembayaran tidak diterima daripada DOKU. Sila cuba lagi atau hubungi admin.');
       } else {
@@ -1166,7 +1197,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                     className="px-5 py-2 rounded-full bg-red-600 hover:bg-red-700 text-white text-sm font-bold shadow-md transition-all duration-300 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
                     id="next-step-btn">
                     <CreditCard size={15} />
-                    Bayar Sekarang
+                    {selectedPlan === 'special' ? 'Aktifkan Percuma' : 'Bayar Sekarang'}
                   </button>
                 )}
               </>
