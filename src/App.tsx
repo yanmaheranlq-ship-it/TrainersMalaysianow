@@ -314,7 +314,7 @@ export default function App() {
     try {
       const params = new URLSearchParams(window.location.search);
       const isSpecialPlanLink = window.location.pathname.replace(/\/$/, '') === '/special';
-      if (params.get('plan') === 'special' || isSpecialPlanLink) {
+      if (params.has('special') || params.get('plan') === 'special' || isSpecialPlanLink) {
         setIsSpecialPlan(true);
         setIsAddModalOpen(true);
       }
