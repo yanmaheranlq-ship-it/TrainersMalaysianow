@@ -1048,8 +1048,17 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                       </span>
                     </div>
                     <div className="text-right">
-                      <span className="text-2xl font-extrabold text-zinc-900">RM19<span className="text-base">.90</span></span>
-                      <span className="text-xs text-zinc-400 font-medium block">/bulan</span>
+                      {selectedPlan === 'special' ? (
+                        <>
+                          <span className="text-2xl font-extrabold text-zinc-900">RM0</span>
+                          <span className="text-xs text-zinc-400 font-medium block">/seumur hidup</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-2xl font-extrabold text-zinc-900">RM19<span className="text-base">.90</span></span>
+                          <span className="text-xs text-zinc-400 font-medium block">/bulan</span>
+                        </>
+                      )}
                     </div>
                   </div>
 
