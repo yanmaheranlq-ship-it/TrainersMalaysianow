@@ -410,6 +410,8 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
     }
   };
 
+  const paymentOverlayVisible = paymentLoading || !!paymentUrl || pollingPayment || (!!paymentError && !paymentConfirmed);
+
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
@@ -494,7 +496,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="flex-grow overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6 bg-white text-zinc-800 custom-scrollbar">
+          <form onSubmit={handleSubmit} className={`flex-grow overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6 bg-white text-zinc-800 custom-scrollbar ${paymentOverlayVisible ? 'invisible' : ''}`}>
 
             {errors.length > 0 && (
               <div className="p-3 bg-red-50 border border-red-200 text-red-800 text-xs rounded-xl flex items-start gap-2">
@@ -963,7 +965,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 z-50 bg-gradient-to-br from-zinc-50 via-white to-amber-50/30 flex flex-col items-center justify-center p-6 sm:p-8 text-center rounded-2xl overflow-y-auto"
+              className="absolute inset-0 z-[60] isolate bg-white flex flex-col items-center justify-center p-6 sm:p-8 text-center rounded-2xl overflow-y-auto"
             >
               {paymentLoading && (
                 <>
@@ -1118,7 +1120,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
           )}
 
           {/* Footer */}
-          <div className="border-t border-zinc-200 bg-zinc-50 p-4 flex items-center justify-between">
+          <div className={`border-t border-zinc-200 bg-zinc-50 p-4 flex items-center justify-between ${paymentOverlayVisible ? 'invisible pointer-events-none' : ''}`}>
             {activeTab === 0 ? (
               <>
                 <div className="text-xs text-zinc-500">
