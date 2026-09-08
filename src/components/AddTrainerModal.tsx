@@ -155,6 +155,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
   const [paymentName, setPaymentName] = useState('');
   const [paymentEmail, setPaymentEmail] = useState('');
   const [paymentPhone, setPaymentPhone] = useState('');
+  const isFreePlan = specialPlan || selectedPlan === 'special';
 
   useEffect(() => {
     if (!isOpen) {
@@ -553,10 +554,10 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                     <Crown size={28} className="text-white" />
                   </div>
                   <h3 className="text-lg font-bold text-zinc-900">
-                    {specialPlan ? 'Lifetime Plan PERCUMA' : 'Langganan Trainer'}
+                    {isFreePlan ? 'Lifetime Plan PERCUMA' : 'Langganan Trainer'}
                   </h3>
                   <p className="text-xs text-zinc-500 max-w-sm mx-auto">
-                    {specialPlan
+                    {isFreePlan
                       ? 'Daftar sebagai trainer di platform Trainerpreneur dengan akses penuh percuma selamanya. Tiada bayaran diperlukan.'
                       : 'Untuk mendaftar sebagai trainer di platform Trainerpreneur, anda perlu melanggan pelan bulanan berikut.'}
                   </p>
@@ -564,7 +565,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
 
                 <div className="grid gap-3">
                   {/* Standard Plan - only when NOT accessed via special link */}
-                  {!specialPlan && (
+                  {!isFreePlan && (
                   <div className={`relative border-2 rounded-2xl p-5 transition-all cursor-pointer ${
                     selectedPlan === 'standard' && subscriptionAgreed
                       ? 'border-teal-500 bg-teal-50/50 shadow-lg shadow-teal-100'
@@ -608,7 +609,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                   )}
 
                   {/* Special Plan - only when accessed via special link */}
-                  {specialPlan && (
+                  {isFreePlan && (
                     <div className={`relative border-2 rounded-2xl p-5 transition-all cursor-pointer ${
                       selectedPlan === 'special' && subscriptionAgreed
                         ? 'border-amber-500 bg-amber-50/50 shadow-lg shadow-amber-100'
