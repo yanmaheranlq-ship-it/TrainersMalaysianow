@@ -319,6 +319,14 @@ export default function App() {
   const [isSpecialPlan, setIsSpecialPlan] = useState(specialPlanLink);
   const [isAddModalOpen, setIsAddModalOpen] = useState(specialPlanLink);
 
+  // Safety net: force-open the free plan modal on /special deep links
+  useEffect(() => {
+    if (specialPlanLink) {
+      setIsSpecialPlan(true);
+      setIsAddModalOpen(true);
+    }
+  }, [specialPlanLink]);
+
   // Synchronize selectedTrainer and urlAction to URL search parameters
   useEffect(() => {
     try {
