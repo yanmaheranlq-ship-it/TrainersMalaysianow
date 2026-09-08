@@ -336,7 +336,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
           trainer_phone: paymentPhone.trim(),
           trainer_id: tempId,
           plan: selectedPlan,
-          amount: selectedPlan === 'special' ? 4990 : 1990,
+          amount: 19.9,
         }),
       });
 

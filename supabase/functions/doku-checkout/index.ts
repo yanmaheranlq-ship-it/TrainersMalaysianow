@@ -84,7 +84,7 @@ Deno.serve(async (req: Request) => {
 
     const body = {
       order: {
-        amount: Math.round(amount),
+        amount: Number(Number(amount).toFixed(2)),
         invoice_number: invoiceNumber,
       },
       payment: {

@@ -1,0 +1,2 @@
+[functions.doku-checkout]
+verify_jwt = false
