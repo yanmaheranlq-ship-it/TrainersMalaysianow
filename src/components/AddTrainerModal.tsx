@@ -552,9 +552,13 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                   <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 shadow-lg">
                     <Crown size={28} className="text-white" />
                   </div>
-                  <h3 className="text-lg font-bold text-zinc-900">Langganan Trainer</h3>
+                  <h3 className="text-lg font-bold text-zinc-900">
+                    {specialPlan ? 'Pakej Percuma Seumur Hidup' : 'Langganan Trainer'}
+                  </h3>
                   <p className="text-xs text-zinc-500 max-w-sm mx-auto">
-                    Untuk mendaftar sebagai trainer di platform Trainerpreneur, anda perlu melanggan pelan bulanan berikut.
+                    {specialPlan
+                      ? 'Daftar sebagai trainer di platform Trainerpreneur dengan akses penuh percuma selamanya.'
+                      : 'Untuk mendaftar sebagai trainer di platform Trainerpreneur, anda perlu melanggan pelan bulanan berikut.'}
                   </p>
                 </div>
 
