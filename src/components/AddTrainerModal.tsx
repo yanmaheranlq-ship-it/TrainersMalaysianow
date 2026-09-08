@@ -615,7 +615,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                     onClick={() => { setSelectedPlan('special'); setSubscriptionAgreed(false); }}
                     >
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold rounded-full shadow-md uppercase tracking-wider">
-                        Tawaran Khas
+                        PERCUMA SEUMUR HIDUP
                       </div>
 
                       {selectedPlan === 'special' && subscriptionAgreed && (
