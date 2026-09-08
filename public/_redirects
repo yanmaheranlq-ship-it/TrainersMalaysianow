@@ -1,2 +1,2 @@
-/special    /index.html?special=true&plan=lifetime-free   200
+/special    /?special=true&plan=lifetime-free   301
 /*          /index.html   200
