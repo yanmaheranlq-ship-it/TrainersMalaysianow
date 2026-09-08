@@ -149,6 +149,9 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [paymentInitiated, setPaymentInitiated] = useState(false);
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+  const [invoiceNumber, setInvoiceNumber] = useState<string | null>(null);
+  const [pollingPayment, setPollingPayment] = useState(false);
   const [paymentName, setPaymentName] = useState('');
   const [paymentEmail, setPaymentEmail] = useState('');
   const [paymentPhone, setPaymentPhone] = useState('');
@@ -161,6 +164,43 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   }, [isOpen]);
+
+  // Poll the payments table for payment confirmation from DOKU webhook
+  useEffect(() => {
+    if (!invoiceNumber || !paymentInitiated || paymentConfirmed) return;
+    setPollingPayment(true);
+    let stopped = false;
+    const poll = async () => {
+      while (!stopped) {
+        try {
+          const { data, error } = await supabase
+            .from('payments')
+            .select('status')
+            .eq('invoice_number', invoiceNumber)
+            .maybeSingle();
+          if (!stopped && data) {
+            if (data.status === 'paid') {
+              setPaymentConfirmed(true);
+              setPollingPayment(false);
+              setPaymentUrl(null);
+              setActiveTab(1);
+              return;
+            }
+            if (data.status === 'failed') {
+              setPaymentError('Pembayaran DOKU gagal. Sila cuba lagi.');
+              setPollingPayment(false);
+              return;
+            }
+          }
+        } catch (e) {
+          console.error('payment poll error:', e);
+        }
+        await new Promise(r => setTimeout(r, 3000));
+      }
+    };
+    poll();
+    return () => { stopped = true; };
+  }, [invoiceNumber, paymentInitiated, paymentConfirmed]);
 
   if (!isOpen) return null;
 
@@ -302,7 +342,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
     setCourseDuration('2 Hari (16 Jam)'); setCourseOutcomes(['']);
     setAvatarFile(null); setAvatarPreview(''); setUploadError('');
     setActiveTab(0); setErrors([]); setAgreedTnC(false); setSubscriptionAgreed(false); setSelectedPlan('standard');
-    setPaymentLoading(false); setPaymentUrl(null); setPaymentError(null); setPaymentInitiated(false);
+    setPaymentLoading(false); setPaymentUrl(null); setPaymentError(null); setPaymentInitiated(false); setPaymentConfirmed(false); setInvoiceNumber(null); setPollingPayment(false);
     setPaymentName(''); setPaymentEmail(''); setPaymentPhone('');
     onClose();
   };
@@ -353,6 +393,8 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
       if (data.payment_url) {
         setPaymentUrl(data.payment_url);
         setPaymentInitiated(true);
+        setPaymentConfirmed(false);
+        setInvoiceNumber(data.invoice_number || null);
         setName(paymentName.trim());
         setEmail(paymentEmail.trim());
         setPhone(paymentPhone.trim());
@@ -421,32 +463,32 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
             </button>
             <button
               type="button"
-              onClick={() => { if (paymentInitiated) setActiveTab(1); }}
+              onClick={() => { if (paymentConfirmed) setActiveTab(1); }}
               className={`flex-1 py-2.5 sm:py-3.5 text-center text-xs sm:text-sm font-bold border-b-2 flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
                 activeTab === 1
                   ? 'border-red-600 text-red-600 bg-white font-extrabold'
                   : 'border-transparent text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100/50'
               }`}
-              disabled={!paymentInitiated}
+              disabled={!paymentConfirmed}
             >
               <User size={14} className="sm:w-4 sm:h-4" />
-              {!paymentInitiated && <Lock size={11} className="text-zinc-400" />}
-              <span className="hidden sm:inline">{paymentInitiated ? '2. Profil Trainer' : '2. Profil (Bayar dahulu)'}</span>
+              {!paymentConfirmed && <Lock size={11} className="text-zinc-400" />}
+              <span className="hidden sm:inline">{paymentConfirmed ? '2. Profil Trainer' : '2. Profil (Tunggu bayar)'}</span>
               <span className="sm:hidden">2. Profil</span>
             </button>
             <button
               type="button"
-              onClick={() => { if (paymentInitiated && validate()) setActiveTab(2); }}
+              onClick={() => { if (paymentConfirmed && validate()) setActiveTab(2); }}
               className={`flex-1 py-2.5 sm:py-3.5 text-center text-xs sm:text-sm font-bold border-b-2 flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
                 activeTab === 2
                   ? 'border-red-600 text-red-600 bg-white font-extrabold'
                   : 'border-transparent text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100/50'
               }`}
-              disabled={!paymentInitiated || !name.trim() || !title.trim()}
+              disabled={!paymentConfirmed || !name.trim() || !title.trim()}
             >
               <BookOpen size={14} className="sm:w-4 sm:h-4" />
-              {!paymentInitiated && <Lock size={11} className="text-zinc-400" />}
-              <span className="hidden sm:inline">{paymentInitiated ? '3. Program Kursus' : '3. Kursus (Bayar dahulu)'}</span>
+              {!paymentConfirmed && <Lock size={11} className="text-zinc-400" />}
+              <span className="hidden sm:inline">{paymentConfirmed ? '3. Program Kursus' : '3. Kursus (Tunggu bayar)'}</span>
               <span className="sm:hidden">3. Kursus</span>
             </button>
           </div>
@@ -988,14 +1030,27 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
             {activeTab === 0 ? (
               <>
                 <div className="text-xs text-zinc-500">
-                  {paymentInitiated ? 'Pembayaran telah dimulakan.' : 'Isi maklumat & bayar untuk meneruskan.'}
+                  {paymentConfirmed ? 'Bayaran disahkan! Lengkapkan profil anda.' : paymentInitiated ? 'Menunggu pengesahan bayaran DOKU...' : 'Isi maklumat & bayar untuk meneruskan.'}
                 </div>
-                {paymentInitiated ? (
+                {paymentConfirmed ? (
                   <button type="button" onClick={() => setActiveTab(1)}
                     className="px-5 py-2 rounded-full bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold shadow-md transition-all duration-300 cursor-pointer"
                     id="next-step-btn">
                     Teruskan ke Profil →
                   </button>
+                ) : paymentInitiated ? (
+                  <div className="flex items-center gap-2">
+                    {paymentUrl && (
+                      <a href={paymentUrl} target="_blank" rel="noopener noreferrer"
+                        className="px-4 py-2 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold shadow-md transition-all cursor-pointer flex items-center gap-1.5">
+                        <ExternalLink size={14} /> Bayar di DOKU
+                      </a>
+                    )}
+                    <div className="flex items-center gap-1.5 text-xs text-zinc-500 font-bold">
+                      <Loader2 size={14} className="animate-spin text-amber-500" />
+                      Menunggu bayaran...
+                    </div>
+                  </div>
                 ) : (
                   <button type="button" onClick={handleInitiatePayment}
                     disabled={!subscriptionAgreed || paymentLoading}

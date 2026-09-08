@@ -1,2 +1,5 @@
 [functions.doku-checkout]
 verify_jwt = false
+
+[functions.doku-webhook]
+verify_jwt = false

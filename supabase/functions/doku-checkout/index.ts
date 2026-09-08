@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "npm:@supabase/supabase-js@2.110.7";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -82,7 +83,13 @@ Deno.serve(async (req: Request) => {
     const requestTimestamp = new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
     const requestTarget = "/checkout/v1/payment";
 
-    const body = {
+    // Determine the app's base URL for callbacks (redirect after payment)
+    const appBaseUrl = Deno.env.get("APP_BASE_URL") ?? "";
+    const returnUrl = appBaseUrl
+      ? `${appBaseUrl}/?payment=success&invoice=${invoiceNumber}`
+      : undefined;
+
+    const body: Record<string, unknown> = {
       order: {
         amount: Number(Number(amount).toFixed(2)),
         invoice_number: invoiceNumber,
@@ -96,6 +103,13 @@ Deno.serve(async (req: Request) => {
         phone: trainer_phone,
       },
     };
+
+    // Set callback URL so DOKU redirects back to the app after payment
+    if (returnUrl) {
+      body.callbacks = {
+        url: returnUrl,
+      };
+    }
 
     const bodyString = JSON.stringify(body);
     const digest = await sha256Base64(bodyString);
@@ -160,6 +174,24 @@ Deno.serve(async (req: Request) => {
     const payment = (resp?.payment ?? dokuData.payment) as Record<string, unknown> | undefined;
     const paymentUrl = payment?.url as string | undefined
       ?? (dokuData as Record<string, unknown>).credit_card_token_page as string | undefined;
+
+    // Insert a pending payment record into the database
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+    if (supabaseUrl && supabaseServiceKey) {
+      const supabase = createClient(supabaseUrl, supabaseServiceKey);
+      await supabase.from("payments").insert({
+        invoice_number: invoiceNumber,
+        trainer_name: trainer_name,
+        trainer_email: trainer_email,
+        trainer_phone: trainer_phone,
+        trainer_id: trainer_id,
+        plan: plan ?? "standard",
+        amount: Number(Number(amount).toFixed(2)),
+        status: "pending",
+        payment_url: paymentUrl ?? null,
+      });
+    }
 
     return new Response(
       JSON.stringify({
