@@ -554,7 +554,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                   </div>
                   <h3 className="text-lg font-bold text-zinc-900">Langganan Trainer</h3>
                   <p className="text-xs text-zinc-500 max-w-sm mx-auto">
-                    Daftar sebagai trainer di platform Trainerpreneur dengan pakej percuma seumur hidup.
+                    Untuk mendaftar sebagai trainer di platform Trainerpreneur, anda perlu melanggan pelan bulanan berikut.
                   </p>
                 </div>
 
