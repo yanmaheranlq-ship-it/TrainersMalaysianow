@@ -144,7 +144,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
   const [errors, setErrors] = useState<string[]>([]);
   const [agreedTnC, setAgreedTnC] = useState(false);
   const [subscriptionAgreed, setSubscriptionAgreed] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<'standard' | 'special'>('standard');
+  const [selectedPlan, setSelectedPlan] = useState<'standard' | 'special'>(specialPlan ? 'special' : 'standard');
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
@@ -164,6 +164,10 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (specialPlan) setSelectedPlan('special');
+  }, [specialPlan]);
 
   // Poll the payments table for payment confirmation from DOKU webhook
   useEffect(() => {
@@ -523,8 +527,9 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                   </p>
                 </div>
 
-                <div className={`grid gap-3 ${specialPlan ? 'sm:grid-cols-2' : ''}`}>
-                  {/* Standard Plan */}
+                <div className="grid gap-3">
+                  {/* Standard Plan - only when NOT accessed via special link */}
+                  {!specialPlan && (
                   <div className={`relative border-2 rounded-2xl p-5 transition-all cursor-pointer ${
                     selectedPlan === 'standard' && subscriptionAgreed
                       ? 'border-teal-500 bg-teal-50/50 shadow-lg shadow-teal-100'
@@ -565,6 +570,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                       ))}
                     </div>
                   </div>
+                  )}
 
                   {/* Special Plan - only when accessed via special link */}
                   {specialPlan && (
