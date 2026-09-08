@@ -553,11 +553,11 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                     <Crown size={28} className="text-white" />
                   </div>
                   <h3 className="text-lg font-bold text-zinc-900">
-                    {specialPlan ? 'Pakej Percuma Seumur Hidup' : 'Langganan Trainer'}
+                    {specialPlan ? 'Lifetime Plan PERCUMA' : 'Langganan Trainer'}
                   </h3>
                   <p className="text-xs text-zinc-500 max-w-sm mx-auto">
                     {specialPlan
-                      ? 'Daftar sebagai trainer di platform Trainerpreneur dengan akses penuh percuma selamanya.'
+                      ? 'Daftar sebagai trainer di platform Trainerpreneur dengan akses penuh percuma selamanya. Tiada bayaran diperlukan.'
                       : 'Untuk mendaftar sebagai trainer di platform Trainerpreneur, anda perlu melanggan pelan bulanan berikut.'}
                   </p>
                 </div>
@@ -619,7 +619,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                     onClick={() => { setSelectedPlan('special'); setSubscriptionAgreed(false); }}
                     >
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold rounded-full shadow-md uppercase tracking-wider">
-                        PERCUMA SEUMUR HIDUP
+                        LIFETIME PLAN PERCUMA
                       </div>
 
                       {selectedPlan === 'special' && subscriptionAgreed && (
@@ -632,7 +632,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                         <div>
                           <div className="flex items-center gap-2 mb-1">
                             <Crown size={16} className="text-amber-500" />
-                            <span className="text-sm font-bold text-zinc-900">Pakej Percuma Seumur Hidup</span>
+                            <span className="text-sm font-bold text-zinc-900">Lifetime Plan PERCUMA</span>
                           </div>
                           <p className="text-xs text-zinc-500">Akses penuh PERCUMA selamanya</p>
                         </div>
@@ -702,7 +702,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                   />
                   <span className="text-xs text-zinc-600 group-hover:text-zinc-800 transition-colors">
                     {selectedPlan === 'special'
-                      ? <>Saya bersetuju untuk melanggan <strong className="text-zinc-900">Pakej Percuma Seumur Hidup</strong> dengan akses penuh percuma selamanya.</>
+                      ? <>Saya bersetuju untuk mendaftar <strong className="text-zinc-900">Lifetime Plan PERCUMA</strong> dengan akses penuh percuma selamanya.</>
                       : <>Saya bersetuju untuk melanggan pelan Trainer pada kadar <strong className="text-zinc-900">RM19.90/bulan</strong> dan memahami bahawa pembayaran akan diproses selepas pendaftaran.</>
                     }
                   </span>
@@ -1045,7 +1045,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                   <div className="w-full bg-white border border-zinc-200 rounded-xl p-4 mb-5 shadow-sm flex items-center justify-between">
                     <div className="text-left">
                       <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
-                        {selectedPlan === 'special' ? 'Pakej Percuma Seumur Hidup' : 'Pelan Trainer'}
+                        {selectedPlan === 'special' ? 'Lifetime Plan PERCUMA' : 'Pelan Trainer'}
                       </span>
                       <span className="text-xs text-zinc-500 block mt-0.5">
                         {selectedPlan === 'special' ? 'Percuma selamanya' : 'Langganan bulanan'}
@@ -1183,7 +1183,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
             {activeTab === 0 ? (
               <>
                 <div className="text-xs text-zinc-500">
-                  {paymentConfirmed ? 'Bayaran disahkan! Lengkapkan profil anda.' : paymentInitiated ? 'Menunggu pengesahan bayaran DOKU...' : 'Isi maklumat & bayar untuk meneruskan.'}
+                  {paymentConfirmed ? 'Pendaftaran percuma disahkan! Lengkapkan profil anda.' : paymentInitiated ? 'Mengaktifkan Lifetime Plan PERCUMA...' : selectedPlan === 'special' ? 'Isi maklumat untuk mendaftar secara percuma.' : 'Isi maklumat & bayar untuk meneruskan.'}
                 </div>
                 {paymentConfirmed ? (
                   <button type="button" onClick={() => setActiveTab(1)}
