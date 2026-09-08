@@ -476,13 +476,13 @@ export default function AdminDashboard({
                     <div className="flex-1 bg-white rounded-xl border border-amber-200 px-4 py-3 flex items-center gap-2 overflow-hidden">
                       <Link size={14} className="text-amber-500 shrink-0" />
                       <span className="text-xs text-zinc-700 font-mono truncate select-all">
-                        https://trainersmalaysia.com/?plan=lifetime-free
+                        https://trainersmalaysia.com/?special=true&plan=lifetime-free
                       </span>
                     </div>
                     <button
                       type="button"
                       onClick={() => {
-                        const url = 'https://trainersmalaysia.com/?plan=lifetime-free';
+                        const url = 'https://trainersmalaysia.com/?special=true&plan=lifetime-free';
                         navigator.clipboard.writeText(url).then(() => {
                           setSpecialLinkCopied(true);
                           setTimeout(() => setSpecialLinkCopied(false), 2000);
