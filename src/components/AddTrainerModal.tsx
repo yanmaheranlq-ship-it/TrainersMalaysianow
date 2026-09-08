@@ -149,6 +149,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [paymentInitiated, setPaymentInitiated] = useState(false);
+  const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [paymentName, setPaymentName] = useState('');
   const [paymentEmail, setPaymentEmail] = useState('');
   const [paymentPhone, setPaymentPhone] = useState('');
@@ -421,32 +422,32 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
             </button>
             <button
               type="button"
-              onClick={() => { if (paymentInitiated) setActiveTab(1); }}
+              onClick={() => { if (paymentCompleted) setActiveTab(1); }}
               className={`flex-1 py-2.5 sm:py-3.5 text-center text-xs sm:text-sm font-bold border-b-2 flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
                 activeTab === 1
                   ? 'border-red-600 text-red-600 bg-white font-extrabold'
                   : 'border-transparent text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100/50'
               }`}
-              disabled={!paymentInitiated}
+              disabled={!paymentCompleted}
             >
               <User size={14} className="sm:w-4 sm:h-4" />
-              {!paymentInitiated && <Lock size={11} className="text-zinc-400" />}
-              <span className="hidden sm:inline">{paymentInitiated ? '2. Profil Trainer' : '2. Profil (Bayar dahulu)'}</span>
+              {!paymentCompleted && <Lock size={11} className="text-zinc-400" />}
+              <span className="hidden sm:inline">{paymentCompleted ? '2. Profil Trainer' : '2. Profil (Bayar dahulu)'}</span>
               <span className="sm:hidden">2. Profil</span>
             </button>
             <button
               type="button"
-              onClick={() => { if (paymentInitiated && validate()) setActiveTab(2); }}
+              onClick={() => { if (paymentCompleted && validate()) setActiveTab(2); }}
               className={`flex-1 py-2.5 sm:py-3.5 text-center text-xs sm:text-sm font-bold border-b-2 flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
                 activeTab === 2
                   ? 'border-red-600 text-red-600 bg-white font-extrabold'
                   : 'border-transparent text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100/50'
               }`}
-              disabled={!paymentInitiated || !name.trim() || !title.trim()}
+              disabled={!paymentCompleted || !name.trim() || !title.trim()}
             >
               <BookOpen size={14} className="sm:w-4 sm:h-4" />
-              {!paymentInitiated && <Lock size={11} className="text-zinc-400" />}
-              <span className="hidden sm:inline">{paymentInitiated ? '3. Program Kursus' : '3. Kursus (Bayar dahulu)'}</span>
+              {!paymentCompleted && <Lock size={11} className="text-zinc-400" />}
+              <span className="hidden sm:inline">{paymentCompleted ? '3. Program Kursus' : '3. Kursus (Bayar dahulu)'}</span>
               <span className="sm:hidden">3. Kursus</span>
             </button>
           </div>
@@ -948,17 +949,26 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                     Bayar di DOKU
                     <ExternalLink size={14} />
                   </a>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPaymentUrl(null);
-                      setActiveTab(1);
-                    }}
-                    className="mt-5 px-5 py-2 rounded-full bg-zinc-800 hover:bg-zinc-900 text-white text-sm font-bold shadow-md transition-all cursor-pointer flex items-center gap-1.5"
-                  >
-                    Teruskan ke Profil →
-                  </button>
-                  <p className="mt-3 text-[11px] text-zinc-400">Anda boleh bayar dahulu, kemudian lengkapkan profil.</p>
+                  <div className="mt-5 w-full max-w-xs space-y-3">
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
+                      <p className="text-xs text-amber-800 leading-relaxed">
+                        Selepas anda selesai bayar di halaman DOKU, klik butang di bawah untuk meneruskan ke profil trainer.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPaymentCompleted(true);
+                        setPaymentUrl(null);
+                        setActiveTab(1);
+                      }}
+                      className="w-full px-5 py-3 rounded-full bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold shadow-md transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <Check size={16} />
+                      Saya Telah Bayar - Teruskan ke Profil →
+                    </button>
+                  </div>
+                  <p className="mt-3 text-[11px] text-zinc-400">Profil hanya boleh diisi selepas pembayaran selesai.</p>
                 </>
               )}
 
@@ -988,9 +998,9 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
             {activeTab === 0 ? (
               <>
                 <div className="text-xs text-zinc-500">
-                  {paymentInitiated ? 'Pembayaran telah dimulakan.' : 'Isi maklumat & bayar untuk meneruskan.'}
+                  {paymentCompleted ? 'Pembayaran selesai. Lengkapkan profil anda.' : 'Isi maklumat & bayar untuk meneruskan.'}
                 </div>
-                {paymentInitiated ? (
+                {paymentCompleted ? (
                   <button type="button" onClick={() => setActiveTab(1)}
                     className="px-5 py-2 rounded-full bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold shadow-md transition-all duration-300 cursor-pointer"
                     id="next-step-btn">
