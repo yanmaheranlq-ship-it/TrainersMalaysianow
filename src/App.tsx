@@ -313,7 +313,8 @@ export default function App() {
   useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
-      if (params.get('plan') === 'special') {
+      const isSpecialPlanLink = window.location.pathname.replace(/\/$/, '') === '/special';
+      if (params.get('plan') === 'special' || isSpecialPlanLink) {
         setIsSpecialPlan(true);
         setIsAddModalOpen(true);
       }
