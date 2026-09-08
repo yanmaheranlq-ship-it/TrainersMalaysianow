@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, UserPlus, Info, BookOpen, User, Briefcase, Mail, Phone, Award, ShieldAlert, BadgePlus, Eye, EyeOff, Upload, Image as ImageIcon, Trash2, IdCard, FileCheck, Plus, GripVertical, CreditCard, Check, Crown, Sparkles, ExternalLink, Loader as Loader2, Lock } from 'lucide-react';
+import { X, UserPlus, Info, BookOpen, User, Briefcase, Mail, Phone, Award, ShieldAlert, BadgePlus, Eye, EyeOff, Upload, Image as ImageIcon, Trash2, IdCard, FileCheck, Plus, GripVertical, CreditCard, Check, CheckCircle, Crown, Sparkles, ExternalLink, Loader as Loader2, Lock } from 'lucide-react';
 import { Trainer, PortfolioItem, CategoryType } from '../types';
 import { supabase } from '../lib/supabase';
 
@@ -155,12 +155,19 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
   const [paymentName, setPaymentName] = useState('');
   const [paymentEmail, setPaymentEmail] = useState('');
   const [paymentPhone, setPaymentPhone] = useState('');
+  const [resumeEmail, setResumeEmail] = useState('');
+  const [resumeChecking, setResumeChecking] = useState(false);
+  const [resumeError, setResumeError] = useState<string | null>(null);
+  const [resumeFound, setResumeFound] = useState(false);
   useEffect(() => {
     if (!isOpen) {
       setAvatarFile(null);
       setAvatarPreview('');
       setUploadError('');
       if (fileInputRef.current) fileInputRef.current.value = '';
+      setResumeEmail('');
+      setResumeError(null);
+      setResumeFound(false);
     }
   }, [isOpen]);
 
@@ -350,6 +357,48 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
     onClose();
   };
 
+  const handleResumeRegistration = async () => {
+    setResumeError(null);
+    if (!resumeEmail.trim() || !resumeEmail.includes('@')) {
+      setResumeError('Sila masukkan emel yang sah.');
+      return;
+    }
+    setResumeChecking(true);
+    try {
+      const { data, error } = await supabase
+        .from('payments')
+        .select('status, plan, trainer_name, trainer_phone, invoice_number')
+        .eq('trainer_email', resumeEmail.trim().toLowerCase())
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) {
+        setResumeError('Tiada rekod bayaran dijumpai untuk emel ini. Sila daftar baru.');
+        return;
+      }
+      if (data.status !== 'paid') {
+        setResumeError(`Bayaran anda masih "${data.status}". Sila selesaikan bayaran dahulu.`);
+        return;
+      }
+      // Payment confirmed — restore data and unlock profile tabs
+      if (data.plan === 'special') setSelectedPlan('special');
+      if (data.trainer_name) { setPaymentName(data.trainer_name); setName(data.trainer_name); }
+      if (data.trainer_phone) { setPaymentPhone(data.trainer_phone); setPhone(data.trainer_phone); }
+      setEmail(resumeEmail.trim());
+      setPaymentEmail(resumeEmail.trim());
+      setPaymentInitiated(true);
+      setPaymentConfirmed(true);
+      setResumeFound(true);
+      setInvoiceNumber(data.invoice_number || null);
+      setActiveTab(1);
+    } catch (err: any) {
+      setResumeError(err.message || 'Gagal menyemak rekod bayaran. Sila cuba lagi.');
+    } finally {
+      setResumeChecking(false);
+    }
+  };
+
   const handleInitiatePayment = async () => {
     const payErrors: string[] = [];
     if (!paymentName.trim()) payErrors.push('Sila masukkan nama anda.');
@@ -362,6 +411,30 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
     setName(paymentName.trim());
     setEmail(paymentEmail.trim());
     setPhone(paymentPhone.trim());
+
+    // Check if this email already has a paid payment — if so, skip payment
+    const { data: existingPaid } = await supabase
+      .from('payments')
+      .select('status, plan, trainer_name, trainer_phone')
+      .eq('trainer_email', paymentEmail.trim().toLowerCase())
+      .eq('status', 'paid')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (existingPaid) {
+      setPaymentLoading(true);
+      try {
+        if (existingPaid.plan === 'special') setSelectedPlan('special');
+        if (existingPaid.trainer_name) { setPaymentName(existingPaid.trainer_name); setName(existingPaid.trainer_name); }
+        if (existingPaid.trainer_phone) { setPaymentPhone(existingPaid.trainer_phone); setPhone(existingPaid.trainer_phone); }
+        setPaymentInitiated(true);
+        setPaymentConfirmed(true);
+        setActiveTab(1);
+      } finally {
+        setPaymentLoading(false);
+      }
+      return;
+    }
 
     // Pakej Percuma Seumur Hidup: skip DOKU and mark as paid immediately
     if (selectedPlan === 'special') {
@@ -664,6 +737,36 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                     </div>
                   )}
                 </div>
+
+                {/* Resume existing paid registration */}
+                {!specialPlan && !paymentConfirmed && (
+                <div className="space-y-3 bg-emerald-50/60 border border-emerald-200 rounded-xl p-4">
+                  <p className="text-xs font-bold text-emerald-800 flex items-center gap-1.5">
+                    <CheckCircle size={13} className="text-emerald-600" /> Sudah Bayar? Sambung Pendaftaran
+                  </p>
+                  <p className="text-[11px] text-emerald-700 leading-relaxed">
+                    Jika anda sudah membuat bayaran tetapi belum sempat lengkapkan profil trainer, masukkan emel anda untuk sambung tanpa perlu bayar semula.
+                  </p>
+                  <div className="flex gap-2">
+                    <input type="email" value={resumeEmail} onChange={(e) => { setResumeEmail(e.target.value); setResumeError(null); setResumeFound(false); }}
+                      placeholder="emel yang anda gunakan semasa bayar"
+                      className="flex-1 px-3 py-2 rounded-lg border border-emerald-200 text-sm focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 outline-none transition-all bg-white" />
+                    <button type="button" onClick={handleResumeRegistration} disabled={resumeChecking}
+                      className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold transition-all cursor-pointer disabled:opacity-50 flex items-center gap-1.5 shrink-0">
+                      {resumeChecking ? <Loader2 size={14} className="animate-spin" /> : <CheckCircle size={14} />}
+                      {resumeChecking ? 'Menyemak...' : 'Sambung'}
+                    </button>
+                  </div>
+                  {resumeError && (
+                    <div className="text-[11px] text-red-600 bg-red-50 border border-red-200 rounded-lg px-2.5 py-1.5">{resumeError}</div>
+                  )}
+                  {resumeFound && (
+                    <div className="text-[11px] text-emerald-700 bg-emerald-100 border border-emerald-300 rounded-lg px-2.5 py-1.5 flex items-center gap-1.5">
+                      <CheckCircle size={12} className="text-emerald-600" /> Bayaran disahkan! Sila lengkapkan profil anda.
+                    </div>
+                  )}
+                </div>
+                )}
 
                 {/* Basic contact info for payment */}
                 <div className="space-y-3 bg-zinc-50 border border-zinc-200 rounded-xl p-4">
