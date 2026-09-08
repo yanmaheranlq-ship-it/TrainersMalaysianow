@@ -957,8 +957,8 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
             )}
           </form>
 
-          {/* Payment overlay — shows on Tab 0 when payment is processing */}
-          {(paymentLoading || paymentUrl || (paymentError && !paymentInitiated)) && (
+          {/* Payment overlay — shows on Tab 0 when payment is processing or awaiting confirmation */}
+          {(paymentLoading || paymentUrl || pollingPayment || (paymentError && !paymentConfirmed)) && (
             <div className="absolute inset-0 z-50 bg-white flex flex-col items-center justify-center p-8 text-center rounded-2xl">
               {paymentLoading && (
                 <>
@@ -971,14 +971,14 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                 </>
               )}
 
-              {paymentUrl && (
+              {paymentUrl && !pollingPayment && (
                 <>
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center mb-5 shadow-lg">
-                    <Check size={32} className="text-white" />
+                    <CreditCard size={32} className="text-white" />
                   </div>
-                  <h3 className="text-lg font-bold text-zinc-900 mb-2">Sedia untuk Pembayaran!</h3>
+                  <h3 className="text-lg font-bold text-zinc-900 mb-2">Bayar di DOKU</h3>
                   <p className="text-sm text-zinc-500 max-w-xs mb-6">
-                    Sila selesaikan pembayaran di halaman DOKU. Selepas bayar, teruskan ke langkah seterusnya untuk melengkapkan profil anda.
+                    Klik butang di bawah untuk membuka halaman pembayaran DOKU. Selepas bayaran berjaya, sistem akan mengesahkan secara automatik dan membawa anda ke langkah profil.
                   </p>
                   <a
                     href={paymentUrl}
@@ -992,19 +992,40 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                   </a>
                   <button
                     type="button"
-                    onClick={() => {
-                      setPaymentUrl(null);
-                      setActiveTab(1);
-                    }}
-                    className="mt-5 px-5 py-2 rounded-full bg-zinc-800 hover:bg-zinc-900 text-white text-sm font-bold shadow-md transition-all cursor-pointer flex items-center gap-1.5"
+                    onClick={() => { setPaymentUrl(null); setPollingPayment(true); }}
+                    className="mt-4 px-5 py-2 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-sm font-bold border border-zinc-300 transition-all cursor-pointer flex items-center gap-1.5"
                   >
-                    Teruskan ke Profil →
+                    <Loader2 size={14} className="animate-spin" />
+                    Saya telah bayar — semak status
                   </button>
-                  <p className="mt-3 text-[11px] text-zinc-400">Anda boleh bayar dahulu, kemudian lengkapkan profil.</p>
+                  <p className="mt-3 text-[11px] text-zinc-400">Selepas bayar di DOKU, sistem akan mengesahkan bayaran anda secara automatik.</p>
                 </>
               )}
 
-              {paymentError && !paymentUrl && !paymentLoading && (
+              {pollingPayment && !paymentConfirmed && (
+                <>
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mb-5 shadow-lg">
+                    <Loader2 size={32} className="text-white animate-spin" />
+                  </div>
+                  <h3 className="text-lg font-bold text-zinc-900 mb-2">Menunggu Pengesahan Bayaran...</h3>
+                  <p className="text-sm text-zinc-500 max-w-xs">
+                    Sistem sedang menyemak status bayaran DOKU anda. Halaman profil akan terbuka secara automatik selepas bayaran disahkan.
+                  </p>
+                  {paymentUrl && (
+                    <a
+                      href={paymentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-5 px-5 py-2 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-sm font-bold border border-zinc-300 transition-all cursor-pointer flex items-center gap-1.5"
+                    >
+                      <ExternalLink size={14} />
+                      Buka semula halaman DOKU
+                    </a>
+                  )}
+                </>
+              )}
+
+              {paymentError && !paymentUrl && !paymentLoading && !pollingPayment && (
                 <>
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center mb-5 shadow-lg">
                     <ShieldAlert size={32} className="text-white" />
@@ -1015,7 +1036,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                   </div>
                   <button
                     type="button"
-                    onClick={() => { setPaymentError(null); }}
+                    onClick={() => { setPaymentError(null); setPaymentInitiated(false); setInvoiceNumber(null); }}
                     className="px-5 py-2 rounded-full bg-zinc-800 hover:bg-zinc-900 text-white text-sm font-bold shadow-md transition-all cursor-pointer"
                   >
                     Cuba Lagi
