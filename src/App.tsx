@@ -311,26 +311,13 @@ export default function App() {
   }, [trainers]);
 
   // State declarations for modals — initialized from URL params for reliable deep-linking
-  const [isSpecialPlan, setIsSpecialPlan] = useState(() => {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const isSpecialPlanLink = window.location.pathname.replace(/\/$/, '') === '/special';
-      return params.has('special') || params.get('plan') === 'special' || params.get('plan') === 'lifetime-free' || isSpecialPlanLink;
-    } catch (e) {
-      console.warn("Failed to read plan param:", e);
-      return false;
-    }
-  });
-  const [isAddModalOpen, setIsAddModalOpen] = useState(() => {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const isSpecialPlanLink = window.location.pathname.replace(/\/$/, '') === '/special';
-      return params.has('special') || params.get('plan') === 'special' || params.get('plan') === 'lifetime-free' || isSpecialPlanLink;
-    } catch (e) {
-      console.warn("Failed to read plan param:", e);
-      return false;
-    }
-  });
+  const specialPlanLink = (() => {
+    const path = window.location.pathname.replace(/\/$/, '');
+    const params = new URLSearchParams(window.location.search);
+    return path === '/special' || params.has('special') || params.get('plan') === 'special' || params.get('plan') === 'lifetime-free';
+  })();
+  const [isSpecialPlan, setIsSpecialPlan] = useState(specialPlanLink);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(specialPlanLink);
 
   // Synchronize selectedTrainer and urlAction to URL search parameters
   useEffect(() => {
