@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, UserPlus, Info, BookOpen, User, Briefcase, Mail, Phone, Award, ShieldAlert, BadgePlus, Eye, EyeOff, Upload, Image as ImageIcon, Trash2, IdCard, FileCheck, Plus, GripVertical, CreditCard, Check, Crown, Sparkles, ExternalLink, Loader as Loader2, Lock } from 'lucide-react';
+import { X, UserPlus, Info, BookOpen, User, Briefcase, Mail, Phone, Award, ShieldAlert, BadgePlus, Eye, EyeOff, Upload, Image as ImageIcon, Trash2, IdCard, FileCheck, Plus, GripVertical, CreditCard, Check, CheckCircle, Crown, Sparkles, ExternalLink, Loader as Loader2, Lock } from 'lucide-react';
 import { Trainer, PortfolioItem, CategoryType } from '../types';
 import { supabase } from '../lib/supabase';
 
@@ -152,6 +152,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [invoiceNumber, setInvoiceNumber] = useState<string | null>(null);
   const [pollingPayment, setPollingPayment] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [paymentName, setPaymentName] = useState('');
   const [paymentEmail, setPaymentEmail] = useState('');
   const [paymentPhone, setPaymentPhone] = useState('');
@@ -161,6 +162,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
       setAvatarPreview('');
       setUploadError('');
       if (fileInputRef.current) fileInputRef.current.value = '';
+      setPaymentSuccess(false);
     }
   }, [isOpen]);
 
@@ -186,7 +188,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
               setPaymentConfirmed(true);
               setPollingPayment(false);
               setPaymentUrl(null);
-              setActiveTab(1);
+              setPaymentSuccess(true);
               return;
             }
             if (data.status === 'failed') {
@@ -204,6 +206,16 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
     poll();
     return () => { stopped = true; };
   }, [invoiceNumber, paymentInitiated, paymentConfirmed]);
+
+  // Auto-transition to profile tab after showing success confirmation
+  useEffect(() => {
+    if (!paymentSuccess) return;
+    const timer = setTimeout(() => {
+      setPaymentSuccess(false);
+      setActiveTab(1);
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, [paymentSuccess]);
 
   if (!isOpen) return null;
 
@@ -384,7 +396,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
         setInvoiceNumber(invNum);
         setPaymentInitiated(true);
         setPaymentConfirmed(true);
-        setActiveTab(1);
+        setPaymentSuccess(true);
       } catch (err) {
         setPaymentError((err as Error).message || 'Gagal mengaktifkan pelan percuma. Sila cuba lagi.');
       } finally {
@@ -444,7 +456,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
     }
   };
 
-  const paymentOverlayVisible = paymentLoading || !!paymentUrl || pollingPayment || (!!paymentError && !paymentConfirmed);
+  const paymentOverlayVisible = paymentLoading || !!paymentUrl || pollingPayment || paymentSuccess || (!!paymentError && !paymentConfirmed);
 
   return (
     <AnimatePresence>
@@ -1148,6 +1160,44 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                       </button>
                     </>
                   )}
+                </motion.div>
+              )}
+
+              {paymentSuccess && (
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+                  className="flex flex-col items-center w-full max-w-sm"
+                >
+                  <div className="flex items-center gap-1.5 mb-6">
+                    <span className="h-1.5 w-8 rounded-full bg-emerald-500" />
+                    <span className="h-1.5 w-8 rounded-full bg-emerald-500" />
+                    <span className="h-1.5 w-8 rounded-full bg-zinc-200" />
+                  </div>
+
+                  <motion.div
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: 'spring', stiffness: 260, damping: 18, delay: 0.1 }}
+                    className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center mb-5 shadow-lg shadow-emerald-200"
+                  >
+                    <CheckCircle size={32} className="text-white" />
+                  </motion.div>
+                  <h3 className="text-xl font-extrabold text-zinc-900 mb-1.5">Bayaran Berjaya!</h3>
+                  <p className="text-sm text-zinc-500 max-w-xs mb-5 leading-relaxed text-center">
+                    Pembayaran anda telah disahkan. Anda akan dialihkan ke langkah profil trainer...
+                  </p>
+                  <div className="flex items-center gap-1.5">
+                    {[0, 1, 2].map((i) => (
+                      <motion.span
+                        key={i}
+                        animate={{ scale: [1, 1.4, 1], opacity: [0.4, 1, 0.4] }}
+                        transition={{ repeat: Infinity, duration: 1, delay: i * 0.15 }}
+                        className="h-2 w-2 rounded-full bg-emerald-500"
+                      />
+                    ))}
+                  </div>
                 </motion.div>
               )}
 
