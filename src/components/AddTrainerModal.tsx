@@ -75,6 +75,50 @@ interface AddTrainerModalProps {
   specialPlan?: boolean;
 }
 
+const PENDING_PAYMENT_KEY = 'lq_pending_doku_payment';
+
+interface PendingPayment {
+  invoiceNumber: string;
+  paymentUrl: string;
+  plan: string;
+  name: string;
+  email: string;
+  phone: string;
+  expiresAt: number;
+}
+
+function savePendingPayment(p: Omit<PendingPayment, 'expiresAt'>) {
+  try {
+    // DOKU checkout links are valid for 60 minutes; keep a small safety margin.
+    localStorage.setItem(PENDING_PAYMENT_KEY, JSON.stringify({ ...p, expiresAt: Date.now() + 55 * 60 * 1000 }));
+  } catch {
+    // ignore storage errors (private mode, quota)
+  }
+}
+
+function loadPendingPayment(): PendingPayment | null {
+  try {
+    const raw = localStorage.getItem(PENDING_PAYMENT_KEY);
+    if (!raw) return null;
+    const p = JSON.parse(raw) as PendingPayment;
+    if (!p?.invoiceNumber || !p?.paymentUrl || !p?.expiresAt || Date.now() > p.expiresAt) {
+      localStorage.removeItem(PENDING_PAYMENT_KEY);
+      return null;
+    }
+    return p;
+  } catch {
+    return null;
+  }
+}
+
+function clearPendingPayment() {
+  try {
+    localStorage.removeItem(PENDING_PAYMENT_KEY);
+  } catch {
+    // ignore
+  }
+}
+
 const CATEGORY_OPTIONS: { value: CategoryType; label: string; desc: string }[] = [
   { value: 'safety', label: 'Safety & Compliance', desc: 'OSHA Certification, Confined Space, First Aid' },
   { value: 'technical', label: 'Technical & IT', desc: 'Cloud, Cybersecurity, Programming, Data Science' },
@@ -170,6 +214,26 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
     if (specialPlan) setSelectedPlan('special');
   }, [specialPlan]);
 
+  // Resume an unfinished DOKU payment: if a pending checkout link was created
+  // earlier (and is still valid), restore it instead of forcing a brand-new one.
+  useEffect(() => {
+    if (!isOpen || specialPlan || paymentConfirmed || paymentInitiated || paymentSuccess) return;
+    const p = loadPendingPayment();
+    if (!p) return;
+    setPaymentName(p.name);
+    setPaymentEmail(p.email);
+    setPaymentPhone(p.phone);
+    setName(p.name);
+    setEmail(p.email);
+    setPhone(p.phone);
+    setSubscriptionAgreed(true);
+    setInvoiceNumber(p.invoiceNumber);
+    setPaymentUrl(p.paymentUrl);
+    setPaymentInitiated(true);
+    setPaymentConfirmed(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
   // Poll DOKU for payment confirmation. This actively asks DOKU for the
   // transaction status (and updates the database) so confirmation works even
   // if DOKU's server-to-server notification never reaches us.
@@ -204,6 +268,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
           }
           if (!stopped && status) {
             if (status === 'paid') {
+              clearPendingPayment();
               setPaymentConfirmed(true);
               setPollingPayment(false);
               setPaymentUrl(null);
@@ -211,6 +276,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
               return;
             }
             if (status === 'failed') {
+              clearPendingPayment();
               setPaymentError('Pembayaran DOKU gagal atau dibatalkan. Sila cuba lagi.');
               setPollingPayment(false);
               setPaymentUrl(null);
@@ -384,6 +450,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
   };
 
   const resetPayment = () => {
+    clearPendingPayment();
     setPaymentError(null);
     setPaymentLoading(false);
     setPaymentUrl(null);
@@ -442,6 +509,17 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
     setPaymentError(null);
     setPaymentUrl(null);
 
+    // Resume an existing, still-valid checkout link rather than creating a new one.
+    const existing = loadPendingPayment();
+    if (existing) {
+      setInvoiceNumber(existing.invoiceNumber);
+      setPaymentUrl(existing.paymentUrl);
+      setPaymentInitiated(true);
+      setPaymentConfirmed(false);
+      setPaymentLoading(false);
+      return;
+    }
+
     try {
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
       const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
@@ -483,6 +561,16 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
         setPaymentInitiated(true);
         setPaymentConfirmed(false);
         setInvoiceNumber(data.invoice_number || null);
+        if (data.invoice_number) {
+          savePendingPayment({
+            invoiceNumber: data.invoice_number,
+            paymentUrl: data.payment_url,
+            plan: selectedPlan,
+            name: paymentName.trim(),
+            email: paymentEmail.trim(),
+            phone: paymentPhone.trim(),
+          });
+        }
       } else if (data.raw) {
         setPaymentError('URL pembayaran tidak diterima daripada DOKU. Sila cuba lagi atau hubungi admin.');
       } else {
