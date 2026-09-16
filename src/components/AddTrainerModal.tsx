@@ -211,8 +211,10 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
               return;
             }
             if (status === 'failed') {
-              setPaymentError('Pembayaran DOKU gagal. Sila cuba lagi.');
+              setPaymentError('Pembayaran DOKU gagal atau dibatalkan. Sila cuba lagi.');
               setPollingPayment(false);
+              setPaymentUrl(null);
+              setPaymentInitiated(false);
               return;
             }
           }
@@ -379,6 +381,18 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
     setPaymentLoading(false); setPaymentUrl(null); setPaymentError(null); setPaymentInitiated(false); setPaymentConfirmed(false); setInvoiceNumber(null); setPollingPayment(false);
     setPaymentName(''); setPaymentEmail(''); setPaymentPhone('');
     onClose();
+  };
+
+  const resetPayment = () => {
+    setPaymentError(null);
+    setPaymentLoading(false);
+    setPaymentUrl(null);
+    setPaymentInitiated(false);
+    setPaymentConfirmed(false);
+    setPaymentSuccess(false);
+    setPollingPayment(false);
+    setInvoiceNumber(null);
+    setErrors([]);
   };
 
   const handleInitiatePayment = async () => {
@@ -1236,7 +1250,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                   </div>
                   <button
                     type="button"
-                    onClick={() => { setPaymentError(null); setPaymentInitiated(false); setInvoiceNumber(null); }}
+                    onClick={resetPayment}
                     className="px-6 py-3 rounded-full bg-zinc-800 hover:bg-zinc-900 text-white text-sm font-bold shadow-md transition-all cursor-pointer"
                   >
                     Cuba Lagi
