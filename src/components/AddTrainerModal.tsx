@@ -475,6 +475,38 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
     setEmail(paymentEmail.trim());
     setPhone(paymentPhone.trim());
 
+    // Resume: if this email already completed payment before but never finished
+    // setting up the profile/password, skip payment and continue to the profile step.
+    try {
+      const emailNorm = paymentEmail.trim();
+      const { data: paidRows } = await supabase
+        .from('payments')
+        .select('invoice_number')
+        .ilike('trainer_email', emailNorm)
+        .eq('status', 'paid')
+        .order('created_at', { ascending: false })
+        .limit(1);
+      const paid = paidRows?.[0];
+      if (paid) {
+        const { data: existingTrainer } = await supabase
+          .from('trainers')
+          .select('id')
+          .ilike('email', emailNorm)
+          .limit(1);
+        const profileDone = (existingTrainer?.length ?? 0) > 0;
+        if (!profileDone) {
+          clearPendingPayment();
+          setInvoiceNumber(paid.invoice_number);
+          setPaymentInitiated(true);
+          setPaymentConfirmed(true);
+          setPaymentSuccess(true);
+          return;
+        }
+      }
+    } catch (e) {
+      console.error('resume paid-payment check failed:', e);
+    }
+
     // Pakej Percuma Seumur Hidup: skip DOKU and mark as paid immediately
     if (selectedPlan === 'special') {
       setPaymentLoading(true);
