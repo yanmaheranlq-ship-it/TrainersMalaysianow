@@ -617,6 +617,53 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
 
   const paymentOverlayVisible = paymentLoading || !!paymentUrl || pollingPayment || paymentSuccess || (!!paymentError && !paymentConfirmed);
 
+  // "Saya telah bayar" — verify immediately (live DOKU status + any confirmed
+  // paid record for this email) and jump straight to profile setup if paid.
+  const handleManualCheck = async () => {
+    setPollingPayment(true);
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+    const confirmPaid = () => {
+      clearPendingPayment();
+      setPaymentConfirmed(true);
+      setPollingPayment(false);
+      setPaymentUrl(null);
+      setPaymentError(null);
+      setPaymentSuccess(true);
+    };
+    try {
+      if (invoiceNumber) {
+        const res = await fetch(`${supabaseUrl}/functions/v1/doku-check-status`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${supabaseAnonKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ invoice_number: invoiceNumber }),
+        });
+        if (res.ok) {
+          const body = await res.json();
+          if (body?.status === 'paid') { confirmPaid(); return; }
+        }
+      }
+      const emailNorm = (paymentEmail || email).trim();
+      if (emailNorm) {
+        const { data: paidRows } = await supabase
+          .from('payments')
+          .select('invoice_number')
+          .ilike('trainer_email', emailNorm)
+          .eq('status', 'paid')
+          .order('created_at', { ascending: false })
+          .limit(1);
+        if (paidRows?.[0]) {
+          setInvoiceNumber(paidRows[0].invoice_number);
+          confirmPaid();
+          return;
+        }
+      }
+    } catch (e) {
+      console.error('manual payment check failed:', e);
+    }
+    // Not confirmed yet: keep the waiting screen; background polling continues.
+  };
+
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
@@ -1253,7 +1300,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                   {/* Secondary action */}
                   <button
                     type="button"
-                    onClick={() => { setPollingPayment(true); }}
+                    onClick={handleManualCheck}
                     className="mt-3 px-5 py-2.5 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-sm font-bold border border-zinc-300 transition-all cursor-pointer flex items-center gap-1.5"
                   >
                     <Loader2 size={14} className="animate-spin" />
