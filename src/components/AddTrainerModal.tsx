@@ -464,9 +464,15 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
 
       if (!res.ok) {
         const errData = await res.json().catch(() => null);
-        const detail = errData?.details?.error?.message || errData?.error || '';
+        const dokuMsg = Array.isArray(errData?.details?.message)
+          ? errData.details.message[0]
+          : errData?.details?.error?.message;
+        const detail = dokuMsg || errData?.error || '';
         if (detail.toLowerCase().includes('invalid_client') || detail.toLowerCase().includes('invalid client')) {
           throw new Error('Konfigurasi pembayaran belum lengkap. Sila hubungi admin untuk mengaktifkan akaun DOKU.');
+        }
+        if (detail.toLowerCase().includes('phone')) {
+          throw new Error('Nombor telefon tidak sah. Sila masukkan nombor telefon Malaysia yang betul (contoh: 0123456789).');
         }
         throw new Error(detail || `Permintaan pembayaran gagal (${res.status})`);
       }

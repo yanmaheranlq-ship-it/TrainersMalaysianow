@@ -78,6 +78,18 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    // DOKU only accepts digit-only phone numbers. Strip spaces, dashes and "+".
+    const sanitizedPhone = String(trainer_phone).replace(/\D/g, "");
+    if (sanitizedPhone.length < 8 || sanitizedPhone.length > 15) {
+      return new Response(
+        JSON.stringify({ error: "Nombor telefon tidak sah. Sila masukkan nombor telefon yang betul." }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
     const invoiceNumber = `INV-${trainer_id}-${Date.now()}`;
     const requestId = crypto.randomUUID();
     const requestTimestamp = new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
@@ -100,7 +112,7 @@ Deno.serve(async (req: Request) => {
       customer: {
         name: trainer_name,
         email: trainer_email,
-        phone: trainer_phone,
+        phone: sanitizedPhone,
       },
     };
 
@@ -184,7 +196,7 @@ Deno.serve(async (req: Request) => {
         invoice_number: invoiceNumber,
         trainer_name: trainer_name,
         trainer_email: trainer_email,
-        trainer_phone: trainer_phone,
+        trainer_phone: sanitizedPhone,
         trainer_id: trainer_id,
         plan: plan ?? "standard",
         amount: Number(Number(amount).toFixed(2)),
