@@ -170,28 +170,47 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
     if (specialPlan) setSelectedPlan('special');
   }, [specialPlan]);
 
-  // Poll the payments table for payment confirmation from DOKU webhook
+  // Poll DOKU for payment confirmation. This actively asks DOKU for the
+  // transaction status (and updates the database) so confirmation works even
+  // if DOKU's server-to-server notification never reaches us.
   useEffect(() => {
     if (!invoiceNumber || !paymentInitiated || paymentConfirmed) return;
     setPollingPayment(true);
     let stopped = false;
+    const checkStatusUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/doku-check-status`;
     const poll = async () => {
       while (!stopped) {
         try {
-          const { data, error } = await supabase
-            .from('payments')
-            .select('status')
-            .eq('invoice_number', invoiceNumber)
-            .maybeSingle();
-          if (!stopped && data) {
-            if (data.status === 'paid') {
+          const res = await fetch(checkStatusUrl, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ invoice_number: invoiceNumber }),
+          });
+          let status: string | undefined;
+          if (res.ok) {
+            const body = await res.json();
+            status = typeof body?.status === 'string' ? body.status : undefined;
+          } else {
+            // Fallback: read the database in case the webhook already updated it.
+            const { data } = await supabase
+              .from('payments')
+              .select('status')
+              .eq('invoice_number', invoiceNumber)
+              .maybeSingle();
+            status = data?.status;
+          }
+          if (!stopped && status) {
+            if (status === 'paid') {
               setPaymentConfirmed(true);
               setPollingPayment(false);
               setPaymentUrl(null);
               setPaymentSuccess(true);
               return;
             }
-            if (data.status === 'failed') {
+            if (status === 'failed') {
               setPaymentError('Pembayaran DOKU gagal. Sila cuba lagi.');
               setPollingPayment(false);
               return;

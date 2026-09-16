@@ -3,3 +3,6 @@ verify_jwt = false
 
 [functions.doku-webhook]
 verify_jwt = false
+
+[functions.doku-check-status]
+verify_jwt = false
