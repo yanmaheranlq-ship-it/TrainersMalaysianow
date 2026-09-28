@@ -60,6 +60,39 @@ async function handleEvent(event: Stripe.Event) {
     return;
   }
 
+  // Guest trainer checkout: our own flow tags the session with an invoice_number.
+  // Mark the matching row in the `payments` table so the app can continue.
+  if (event.type === 'checkout.session.completed') {
+    const session = stripeData as Stripe.Checkout.Session;
+    const invoiceNumber = session.metadata?.invoice_number;
+    if (invoiceNumber) {
+      const paid = session.payment_status === 'paid';
+      const { error } = await supabase
+        .from('payments')
+        .update({
+          status: paid ? 'paid' : 'pending',
+          doku_transaction_id:
+            typeof session.payment_intent === 'string' ? session.payment_intent : null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('invoice_number', invoiceNumber);
+      if (error) console.error('Failed to update trainer payment:', error);
+      return;
+    }
+  }
+
+  if (event.type === 'checkout.session.expired') {
+    const session = stripeData as Stripe.Checkout.Session;
+    const invoiceNumber = session.metadata?.invoice_number;
+    if (invoiceNumber) {
+      await supabase
+        .from('payments')
+        .update({ status: 'failed', updated_at: new Date().toISOString() })
+        .eq('invoice_number', invoiceNumber);
+      return;
+    }
+  }
+
   if (!('customer' in stripeData)) {
     return;
   }

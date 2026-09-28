@@ -6,3 +6,12 @@ verify_jwt = false
 
 [functions.doku-check-status]
 verify_jwt = false
+
+[functions.stripe-checkout]
+verify_jwt = true
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.stripe-guest-checkout]
+verify_jwt = false

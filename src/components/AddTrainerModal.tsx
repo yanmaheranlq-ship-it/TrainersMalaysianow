@@ -89,7 +89,7 @@ interface PendingPayment {
 
 function savePendingPayment(p: Omit<PendingPayment, 'expiresAt'>) {
   try {
-    // DOKU checkout links are valid for 60 minutes; keep a small safety margin.
+    // Checkout links are valid for a limited time; keep a small safety margin.
     localStorage.setItem(PENDING_PAYMENT_KEY, JSON.stringify({ ...p, expiresAt: Date.now() + 55 * 60 * 1000 }));
   } catch {
     // ignore storage errors (private mode, quota)
@@ -214,7 +214,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
     if (specialPlan) setSelectedPlan('special');
   }, [specialPlan]);
 
-  // Resume an unfinished DOKU payment: if a pending checkout link was created
+  // Resume an unfinished payment: if a pending checkout link was created
   // earlier (and is still valid), restore it instead of forcing a brand-new one.
   useEffect(() => {
     if (!isOpen || specialPlan || paymentConfirmed || paymentInitiated || paymentSuccess) return;
@@ -234,38 +234,22 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
-  // Poll DOKU for payment confirmation. This actively asks DOKU for the
-  // transaction status (and updates the database) so confirmation works even
-  // if DOKU's server-to-server notification never reaches us.
+  // Poll for payment confirmation by reading the payments table, which the
+  // Stripe webhook updates once checkout completes. Works regardless of whether
+  // the user returns to the tab, since confirmation lives in the database.
   useEffect(() => {
     if (!invoiceNumber || !paymentInitiated || paymentConfirmed) return;
     setPollingPayment(true);
     let stopped = false;
-    const checkStatusUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/doku-check-status`;
     const poll = async () => {
       while (!stopped) {
         try {
-          const res = await fetch(checkStatusUrl, {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ invoice_number: invoiceNumber }),
-          });
-          let status: string | undefined;
-          if (res.ok) {
-            const body = await res.json();
-            status = typeof body?.status === 'string' ? body.status : undefined;
-          } else {
-            // Fallback: read the database in case the webhook already updated it.
-            const { data } = await supabase
-              .from('payments')
-              .select('status')
-              .eq('invoice_number', invoiceNumber)
-              .maybeSingle();
-            status = data?.status;
-          }
+          const { data } = await supabase
+            .from('payments')
+            .select('status')
+            .eq('invoice_number', invoiceNumber)
+            .maybeSingle();
+          const status = data?.status;
           if (!stopped && status) {
             if (status === 'paid') {
               clearPendingPayment();
@@ -277,7 +261,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
             }
             if (status === 'failed') {
               clearPendingPayment();
-              setPaymentError('Pembayaran DOKU gagal atau dibatalkan. Sila cuba lagi.');
+              setPaymentError('Pembayaran gagal atau dibatalkan. Sila cuba lagi.');
               setPollingPayment(false);
               setPaymentUrl(null);
               setPaymentInitiated(false);
@@ -507,7 +491,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
       console.error('resume paid-payment check failed:', e);
     }
 
-    // Pakej Percuma Seumur Hidup: skip DOKU and mark as paid immediately
+    // Pakej Percuma Seumur Hidup: skip payment and mark as paid immediately
     if (selectedPlan === 'special') {
       setPaymentLoading(true);
       try {
@@ -556,7 +540,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
       const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
       const tempId = `TMP-${Date.now()}`;
-      const res = await fetch(`${supabaseUrl}/functions/v1/doku-checkout`, {
+      const res = await fetch(`${supabaseUrl}/functions/v1/stripe-guest-checkout`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -569,21 +553,13 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
           trainer_id: tempId,
           plan: selectedPlan,
           amount: 19.9,
+          origin: window.location.origin,
         }),
       });
 
       if (!res.ok) {
         const errData = await res.json().catch(() => null);
-        const dokuMsg = Array.isArray(errData?.details?.message)
-          ? errData.details.message[0]
-          : errData?.details?.error?.message;
-        const detail = dokuMsg || errData?.error || '';
-        if (detail.toLowerCase().includes('invalid_client') || detail.toLowerCase().includes('invalid client')) {
-          throw new Error('Konfigurasi pembayaran belum lengkap. Sila hubungi admin untuk mengaktifkan akaun DOKU.');
-        }
-        if (detail.toLowerCase().includes('phone')) {
-          throw new Error('Nombor telefon tidak sah. Sila masukkan nombor telefon Malaysia yang betul (contoh: 0123456789).');
-        }
+        const detail = errData?.error || '';
         throw new Error(detail || `Permintaan pembayaran gagal (${res.status})`);
       }
 
@@ -603,10 +579,8 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
             phone: paymentPhone.trim(),
           });
         }
-      } else if (data.raw) {
-        setPaymentError('URL pembayaran tidak diterima daripada DOKU. Sila cuba lagi atau hubungi admin.');
       } else {
-        setPaymentError('URL pembayaran tidak diterima. Sila hubungi admin.');
+        setPaymentError('URL pembayaran tidak diterima. Sila cuba lagi atau hubungi admin.');
       }
     } catch (err) {
       setPaymentError((err as Error).message || 'Gagal memulakan pembayaran. Sila hubungi admin.');
@@ -617,12 +591,10 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
 
   const paymentOverlayVisible = paymentLoading || !!paymentUrl || pollingPayment || paymentSuccess || (!!paymentError && !paymentConfirmed);
 
-  // "Saya telah bayar" — verify immediately (live DOKU status + any confirmed
+  // "Saya telah bayar" — verify immediately (payment record + any confirmed
   // paid record for this email) and jump straight to profile setup if paid.
   const handleManualCheck = async () => {
     setPollingPayment(true);
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
     const confirmPaid = () => {
       clearPendingPayment();
       setPaymentConfirmed(true);
@@ -633,15 +605,12 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
     };
     try {
       if (invoiceNumber) {
-        const res = await fetch(`${supabaseUrl}/functions/v1/doku-check-status`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${supabaseAnonKey}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ invoice_number: invoiceNumber }),
-        });
-        if (res.ok) {
-          const body = await res.json();
-          if (body?.status === 'paid') { confirmPaid(); return; }
-        }
+        const { data } = await supabase
+          .from('payments')
+          .select('status')
+          .eq('invoice_number', invoiceNumber)
+          .maybeSingle();
+        if (data?.status === 'paid') { confirmPaid(); return; }
       }
       const emailNorm = (paymentEmail || email).trim();
       if (emailNorm) {
@@ -1231,7 +1200,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                     <CreditCard size={32} className="text-white" />
                   </div>
                   <h3 className="text-lg font-bold text-zinc-900 mb-2">Menyediakan Pembayaran...</h3>
-                  <p className="text-sm text-zinc-500 max-w-xs">Sila tunggu sebentar. Kami sedang menghubungkan anda ke halaman pembayaran DOKU.</p>
+                  <p className="text-sm text-zinc-500 max-w-xs">Sila tunggu sebentar. Kami sedang menghubungkan anda ke halaman pembayaran Stripe.</p>
                   <Loader2 size={24} className="text-amber-500 mt-5 animate-spin" />
                 </>
               )}
@@ -1253,9 +1222,9 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                   <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center mb-5 shadow-lg shadow-teal-200">
                     <CreditCard size={32} className="text-white" />
                   </div>
-                  <h3 className="text-xl font-extrabold text-zinc-900 mb-1.5">Bayar di DOKU</h3>
+                  <h3 className="text-xl font-extrabold text-zinc-900 mb-1.5">Bayar dengan Stripe</h3>
                   <p className="text-sm text-zinc-500 max-w-xs mb-6 leading-relaxed">
-                    Klik butang di bawah untuk membuka halaman pembayaran DOKU. Selepas bayaran berjaya, sistem akan mengesahkan secara automatik dan membawa anda ke langkah profil.
+                    Klik butang di bawah untuk membuka halaman pembayaran Stripe yang selamat. Selepas bayaran berjaya, sistem akan mengesahkan secara automatik dan membawa anda ke langkah profil.
                   </p>
 
                   {/* Price summary card */}
@@ -1293,7 +1262,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                     className="w-full px-6 py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-base font-extrabold shadow-xl shadow-amber-200 transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer"
                   >
                     <CreditCard size={20} />
-                    Teruskan Bayaran ke DOKU
+                    Teruskan Bayaran ke Stripe
                     <ExternalLink size={16} />
                   </motion.a>
 
@@ -1451,7 +1420,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                     {paymentUrl && (
                       <a href={paymentUrl} target="_blank" rel="noopener noreferrer"
                         className="px-5 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-extrabold shadow-lg shadow-amber-200 transition-all cursor-pointer flex items-center gap-1.5">
-                        <CreditCard size={15} /> Teruskan Bayaran ke DOKU <ExternalLink size={13} />
+                        <CreditCard size={15} /> Teruskan Bayaran ke Stripe <ExternalLink size={13} />
                       </a>
                     )}
                     <div className="flex items-center gap-1.5 text-xs text-zinc-500 font-bold">
