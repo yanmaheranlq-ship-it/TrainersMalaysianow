@@ -75,7 +75,7 @@ interface AddTrainerModalProps {
   specialPlan?: boolean;
 }
 
-const PENDING_PAYMENT_KEY = 'lq_pending_doku_payment';
+const PENDING_PAYMENT_KEY = 'lq_pending_stripe_payment';
 
 interface PendingPayment {
   invoiceNumber: string;
