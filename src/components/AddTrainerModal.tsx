@@ -288,6 +288,15 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
     return () => clearTimeout(timer);
   }, [paymentSuccess]);
 
+  // Hard guard: the profile and course steps must never be reachable until the
+  // subscription payment is confirmed. If anything leaves us on a later step
+  // without a confirmed payment, snap back to the subscription step.
+  useEffect(() => {
+    if (!paymentConfirmed && activeTab !== 0) {
+      setActiveTab(0);
+    }
+  }, [paymentConfirmed, activeTab]);
+
   if (!isOpen) return null;
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -897,7 +906,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
             )}
 
             {/* TAB 1: TRAINER DETAILS */}
-            {activeTab === 1 && (
+            {activeTab === 1 && paymentConfirmed && (
               <div className="space-y-4">
                 {/* Profile Photo Upload */}
                 <div className="space-y-2">
@@ -1131,7 +1140,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
             )}
 
             {/* TAB 2: COURSE */}
-            {activeTab === 2 && (
+            {activeTab === 2 && paymentConfirmed && (
               <div className="space-y-4">
                 <div className="bg-zinc-50 border border-zinc-200 p-3.5 rounded-xl flex items-start gap-2.5 shadow-sm">
                   <BookOpen className="text-red-500 mt-0.5 shrink-0" size={18} />
