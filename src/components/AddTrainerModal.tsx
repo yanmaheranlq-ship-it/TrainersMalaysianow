@@ -1233,7 +1233,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                   </div>
                   <h3 className="text-xl font-extrabold text-zinc-900 mb-1.5">Bayar dengan Stripe</h3>
                   <p className="text-sm text-zinc-500 max-w-xs mb-6 leading-relaxed">
-                    Klik butang di bawah untuk membuka halaman pembayaran Stripe yang selamat. Selepas bayaran berjaya, sistem akan mengesahkan secara automatik dan membawa anda ke langkah profil.
+                    Buat bayaran melalui Stripe. Selepas bayaran disahkan, anda boleh lengkapkan profil trainer.
                   </p>
 
                   {/* Price summary card */}
@@ -1271,7 +1271,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                     className="w-full px-6 py-4 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-base font-extrabold shadow-xl shadow-amber-200 transition-all duration-300 flex items-center justify-center gap-2.5 cursor-pointer"
                   >
                     <CreditCard size={20} />
-                    Teruskan Bayaran ke Stripe
+                    Bayar melalui Stripe
                     <ExternalLink size={16} />
                   </motion.a>
 
@@ -1282,10 +1282,10 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                     className="mt-3 px-5 py-2.5 rounded-full bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-sm font-bold border border-zinc-300 transition-all cursor-pointer flex items-center gap-1.5"
                   >
                     <Loader2 size={14} className="animate-spin" />
-                    Saya telah bayar — semak status
+                    Dah bayar? Semak status
                   </button>
                   <p className="mt-3 text-[11px] text-zinc-400 leading-relaxed max-w-xs">
-                    Bayaran akan disahkan secara automatik sebelum anda melengkapkan profil trainer.
+                    Lengkapkan bayaran dahulu sebelum isi profil trainer.
                   </p>
                 </motion.div>
               )}
@@ -1333,7 +1333,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                         className="px-5 py-2.5 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold shadow-md transition-all cursor-pointer flex items-center gap-1.5"
                       >
                         <ExternalLink size={14} />
-                        Lengkapkan pembayaran di sini
+                        Bayar di sini
                       </a>
                       <button
                         type="button"
@@ -1368,9 +1368,9 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                   >
                     <CheckCircle size={32} className="text-white" />
                   </motion.div>
-                  <h3 className="text-xl font-extrabold text-zinc-900 mb-1.5">Bayaran Berjaya!</h3>
+                  <h3 className="text-xl font-extrabold text-zinc-900 mb-1.5">Bayaran berjaya</h3>
                   <p className="text-sm text-zinc-500 max-w-xs mb-5 leading-relaxed text-center">
-                    Pembayaran anda telah disahkan. Anda akan dialihkan ke langkah profil trainer...
+                    Bayaran disahkan. Membuka profil trainer...
                   </p>
                   <div className="flex items-center gap-1.5">
                     {[0, 1, 2].map((i) => (
@@ -1429,7 +1429,7 @@ export default function AddTrainerModal({ isOpen, onClose, onAdd, specialPlan = 
                     {paymentUrl && (
                       <a href={paymentUrl} target="_blank" rel="noopener noreferrer"
                         className="px-5 py-2.5 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-extrabold shadow-lg shadow-amber-200 transition-all cursor-pointer flex items-center gap-1.5">
-                        <CreditCard size={15} /> Teruskan Bayaran ke Stripe <ExternalLink size={13} />
+                        <CreditCard size={15} /> Bayar melalui Stripe <ExternalLink size={13} />
                       </a>
                     )}
                     <div className="flex items-center gap-1.5 text-xs text-zinc-500 font-bold">
